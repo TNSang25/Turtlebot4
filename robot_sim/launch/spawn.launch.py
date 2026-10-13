@@ -39,7 +39,7 @@ def _spawn(context):
 def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('robot_name', default_value='turtlebot4'),
-        DeclareLaunchArgument('enable_camera', default_value='false', choices=['true', 'false']),
+        DeclareLaunchArgument('enable_camera', default_value='true', choices=['true', 'false']),
         DeclareLaunchArgument('x', default_value='0.0'),
         DeclareLaunchArgument('y', default_value='0.0'),
         DeclareLaunchArgument('z', default_value='0.02'),

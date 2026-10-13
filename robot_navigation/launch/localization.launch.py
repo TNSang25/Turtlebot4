@@ -9,16 +9,36 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
+from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
     share = FindPackageShare('robot_navigation')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    localization_params = RewrittenYaml(
+        source_file=LaunchConfiguration('params_file'),
+        param_rewrites={
+            'amcl.ros__parameters.set_initial_pose': LaunchConfiguration('set_initial_pose'),
+            'amcl.ros__parameters.initial_pose.x': LaunchConfiguration('initial_pose_x'),
+            'amcl.ros__parameters.initial_pose.y': LaunchConfiguration('initial_pose_y'),
+            'amcl.ros__parameters.initial_pose.z': '0.0',
+            'amcl.ros__parameters.initial_pose.yaw': LaunchConfiguration('initial_pose_yaw'),
+        },
+        convert_types=True)
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='true'),
         DeclareLaunchArgument('rviz', default_value='true'),
         DeclareLaunchArgument('autostart', default_value='true'),
         DeclareLaunchArgument('log_level', default_value='info'),
+        DeclareLaunchArgument(
+            'set_initial_pose', default_value='false', choices=['true', 'false'],
+            description='Initialize AMCL from the supplied pose; false uses RViz 2D Pose Estimate'),
+        DeclareLaunchArgument(
+            'initial_pose_x', default_value='0.0', description='Initial x in map frame (metres)'),
+        DeclareLaunchArgument(
+            'initial_pose_y', default_value='0.0', description='Initial y in map frame (metres)'),
+        DeclareLaunchArgument(
+            'initial_pose_yaw', default_value='0.0', description='Initial yaw in map frame (radians)'),
         DeclareLaunchArgument(
             'map',
             default_value=PathJoinSubstitution([
@@ -38,7 +58,7 @@ def generate_launch_description():
                 launch_arguments={
                     'map': LaunchConfiguration('map'),
                     'use_sim_time': use_sim_time,
-                    'params_file': LaunchConfiguration('params_file'),
+                    'params_file': localization_params,
                     'autostart': LaunchConfiguration('autostart'),
                     'use_composition': 'False',
                     'use_respawn': 'False',

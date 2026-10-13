@@ -3,7 +3,7 @@
   <!-- Official TurtleBot4 Standard + Create 3 xacros, included directly. -->
   <xacro:arg name="robot_name" default="turtlebot4"/>
   <xacro:arg name="simulation" default="true"/>
-  <xacro:arg name="enable_camera" default="false"/>
+  <xacro:arg name="enable_camera" default="true"/>
   <xacro:arg name="simulation_config" default="../config/simulation.yaml"/>
   <xacro:attribute name="name" value="$(arg robot_name)"/>
   <xacro:include filename="standard/turtlebot4.urdf.xacro"/>

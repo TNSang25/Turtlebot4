@@ -123,6 +123,27 @@ Visualization Manager:
         Durability Policy: Volatile
         Reliability Policy: Best Effort
         History Policy: Keep Last
+    - Class: rviz_default_plugins/Image
+      Name: Camera RGB
+      Enabled: true
+      Value: true
+      Topic:
+        Value: /camera/image
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Best Effort
+        History Policy: Keep Last
+    - Class: rviz_default_plugins/Image
+      Name: Camera Depth
+      Enabled: false
+      Value: false
+      Normalize Range: true
+      Topic:
+        Value: /camera/depth_image
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Best Effort
+        History Policy: Keep Last
     - Class: rviz_default_plugins/TF
       Name: TF
       Enabled: false
