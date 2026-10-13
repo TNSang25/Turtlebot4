@@ -9,48 +9,44 @@ Báo cáo: [Markdown](docs/bao_cao_turtlebot4.md) · [PDF](docs/bao_cao_turtlebo
 ## 1. Cấu trúc chương trình
 
 ```text
-turtlebot4_ws/
-├── src/
-│   ├── README.md
-│   ├── robot_description/
-│   │   ├── CMakeLists.txt, package.xml
-│   │   ├── urdf/          # Xacro TurtleBot4, Create 3, cảm biến, adapter Gazebo
-│   │   ├── meshes/        # 11 mesh DAE từ nhà phát triển
-│   │   ├── config/        # simulation.yaml: DiffDrive và cảm biến
-│   │   ├── launch/        # display.launch.py
-│   │   ├── rviz/
-│   │   └── licenses/
-│   ├── robot_sim/
-│   │   ├── CMakeLists.txt, package.xml
-│   │   ├── worlds/        # demo.sdf, empty.sdf
-│   │   ├── maps/          # demo.yaml, demo.pgm: map mẫu sinh từ world
-│   │   ├── config/        # bridge_config.yaml, demo_layout.yaml
-│   │   ├── launch/        # sim, gazebo, spawn, bridge
-│   │   ├── scripts/       # Sinh world/map và kiểm tra mô phỏng
-│   │   └── licenses/
-│   ├── robot_mapping/
-│   │   ├── CMakeLists.txt, package.xml
-│   │   ├── config/        # slam.yaml
-│   │   ├── launch/        # mapping.launch.py, save_map.launch.py
-│   │   ├── rviz/
-│   │   └── licenses/
-│   ├── robot_navigation/
-│   │   ├── CMakeLists.txt, package.xml
-│   │   ├── maps/          # my_map.yaml, my_map.pgm: map SLAM đã lưu
-│   │   ├── config/        # nav2.yaml: AMCL, planner, controller, costmap
-│   │   ├── launch/        # localization.launch.py, navigation.launch.py
-│   │   ├── rviz/
-│   │   └── licenses/
-│   ├── robot_node/
-│   │   ├── setup.py, setup.cfg, package.xml
-│   │   ├── robot_node/    # Teleop và xử lý vận tốc
-│   │   ├── resource/      # Marker đăng ký package Python
-│   │   ├── test/
-│   │   └── licenses/
-│   └── docs/             # Báo cáo, hình minh họa, dữ liệu và script xuất PDF
-├── build/                # colcon tạo khi build
-├── install/              # Các package được cài đặt sau build
-└── log/                  # Log của colcon
+Turtlebot4/                  # Thư mục gốc repo GitHub
+├── README.md
+├── robot_description/
+│   ├── CMakeLists.txt, package.xml
+│   ├── urdf/          # Xacro TurtleBot4, Create 3, cảm biến, adapter Gazebo
+│   ├── meshes/        # 11 mesh DAE từ nhà phát triển
+│   ├── config/        # simulation.yaml: DiffDrive và cảm biến
+│   ├── launch/        # display.launch.py
+│   ├── rviz/
+│   └── licenses/
+├── robot_sim/
+│   ├── CMakeLists.txt, package.xml
+│   ├── worlds/        # demo.sdf, empty.sdf
+│   ├── maps/          # demo.yaml, demo.pgm: map mẫu sinh từ world
+│   ├── config/        # bridge_config.yaml, demo_layout.yaml
+│   ├── launch/        # sim, gazebo, spawn, bridge
+│   ├── scripts/       # Sinh world/map và kiểm tra mô phỏng
+│   └── licenses/
+├── robot_mapping/
+│   ├── CMakeLists.txt, package.xml
+│   ├── config/        # slam.yaml
+│   ├── launch/        # mapping.launch.py, save_map.launch.py
+│   ├── rviz/
+│   └── licenses/
+├── robot_navigation/
+│   ├── CMakeLists.txt, package.xml
+│   ├── maps/          # my_map.yaml, my_map.pgm: map SLAM đã lưu
+│   ├── config/        # nav2.yaml: AMCL, planner, controller, costmap
+│   ├── launch/        # localization.launch.py, navigation.launch.py
+│   ├── rviz/
+│   └── licenses/
+├── robot_node/
+│   ├── setup.py, setup.cfg, package.xml
+│   ├── robot_node/    # Teleop và xử lý vận tốc
+│   ├── resource/      # Marker đăng ký package Python
+│   ├── test/
+│   └── licenses/
+└── docs/             # Báo cáo, hình minh họa, dữ liệu và script xuất PDF
 ```
 
 | Package | Vai trò |
@@ -61,8 +57,20 @@ turtlebot4_ws/
 | `robot_navigation` | Lưu map, chạy localization và navigation bằng hai launch riêng. |
 | `robot_node` | Node teleop phát lệnh `geometry_msgs/msg/Twist` trên `/cmd_vel`. |
 
-README chính nằm trong `src/`; giấy phép và attribution nằm ở `licenses/`
-của từng package. `.gitkeep` chỉ giữ thư mục rỗng trong Git, không tham gia runtime.
+Trên GitHub, 5 package nằm ngay ở thư mục gốc repo. Để chạy các lệnh trong
+hướng dẫn, đặt nội dung repo vào `~/workspaces/turtlebot4_ws/src/`:
+
+```text
+turtlebot4_ws/
+├── src/            # README.md, docs/ và 5 thư mục robot_* của repo
+├── build/          # colcon tạo khi build
+├── install/        # Các package được cài đặt sau build
+└── log/            # Log của colcon
+```
+
+Trong workspace, README chính vẫn ở `src/README.md`; giấy phép và attribution
+nằm ở `licenses/` của từng package. `.gitkeep` chỉ giữ thư mục rỗng trong Git,
+không tham gia runtime.
 
 ## 2. Cài dependency và build
 

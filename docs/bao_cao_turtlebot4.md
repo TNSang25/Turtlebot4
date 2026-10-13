@@ -8,6 +8,8 @@
 
 ## 1. Cấu trúc chương trình
 
+Repo GitHub đặt 5 thư mục package `robot_*`, `README.md` và `docs/` ngay tại thư mục gốc. Cây bên dưới mô tả workspace khi đặt nội dung repo vào `turtlebot4_ws/src/`; các lệnh chạy trong báo cáo dùng cách bố trí workspace này.
+
 Chương trình chia thành năm package theo chức năng. Mô tả cơ khí tách khỏi môi trường mô phỏng; mapping, localization và navigation có launch riêng; node điều khiển phát message chuẩn ROS 2. Cách chia này cho phép thay world, chỉnh cấu hình SLAM hoặc thay thuật toán navigation mà không phải sửa toàn bộ mô hình robot.
 
 ```text
