@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Adapted from irobot_create_description (Humble); see NOTICE for commit/license. Local mesh paths; runtime sensors/control are in turtlebot4.gazebo.xacro. -->
+  <xacro:macro name="ir_opcode_receivers" params="name:=ir_omni                                                   gazebo                                                   namespace                                                   robot_model_name                                                   dock_model_name                                                   emitter_link_name                                                   parent:=base_link                                                   sensor_0_fov                                                   sensor_0_range                                                   sensor_1_fov                                                   sensor_1_range                                                   samples:=50                                                   min_range:=0.015                                                   update_rate:=62                                                   visualize:=false                                                   *origin">
+    <xacro:property name="joint_name" value="${name}_joint"/>
+    <xacro:property name="receiver_link_name" value="${name}"/>
+    <joint name="${joint_name}" type="fixed">
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}"/>
+      <child link="${receiver_link_name}"/>
+    </joint>
+    <link name="${receiver_link_name}">
+      <xacro:inertial_dummy/>
+    </link>
+    <!-- These rays are only used for aesthetic and debugging purposes only when the visualize flag is set.
+    This there is no need for high update rates. -->
+    <gazebo reference="${joint_name}">
+      <preserveFixedJoint>true</preserveFixedJoint>
+    </gazebo>
+  </xacro:macro>
+</robot>

@@ -1,0 +1,21 @@
+# Simulator interfaces only. Mechanical dimensions/inertia come from upstream.
+# Wheel geometry must match iRobot's URDF; changing these changes odometry only.
+wheel_radius: 0.03575
+wheel_separation: 0.233
+max_linear_velocity: 0.31
+max_angular_velocity: 1.9
+max_linear_acceleration: 0.5
+max_angular_acceleration: 2.0
+# Keep upstream scan geometry; use 10 Hz to avoid TF latency with detailed meshes.
+# Upstream Humble simulator uses 62 Hz; this is an interface/performance setting.
+lidar_samples: 640
+lidar_rate: 10.0
+lidar_min_range: 0.164
+lidar_max_range: 12.0
+imu_rate: 62.0
+camera_rate: 30.0
+camera_width: 320
+camera_height: 240
+camera_horizontal_fov: 1.047
+camera_near_clip: 0.3
+camera_far_clip: 100.0

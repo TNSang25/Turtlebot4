@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Adapted from irobot_create_description (Humble); see NOTICE for commit/license. Local mesh paths; runtime sensors/control are in turtlebot4.gazebo.xacro. -->
+  <xacro:macro name="imu_sensor" params="name:=imu gazebo namespace parent:=base_link update_rate:=62 *origin">
+    <joint name="${name}_joint" type="fixed">
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}"/>
+      <child link="${name}_link"/>
+    </joint>
+    <link name="${name}_link">
+      <xacro:inertial_dummy/>
+    </link>
+    <gazebo reference="${name}_joint">
+      <preserveFixedJoint>true</preserveFixedJoint>
+    </gazebo>
+  </xacro:macro>
+</robot>

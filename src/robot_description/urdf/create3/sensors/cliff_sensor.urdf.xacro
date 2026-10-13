@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Adapted from irobot_create_description (Humble); see NOTICE for commit/license. Local mesh paths; runtime sensors/control are in turtlebot4.gazebo.xacro. -->
+  <xacro:macro name="cliff_sensor" params="name gazebo namespace parent:=base_link                                          visualize:=false *origin">
+    <!-- Sensor settings -->
+    <xacro:property name="update_rate" value="62"/>
+    <xacro:property name="fov_deg" value="5"/>
+    <xacro:property name="fov_rad" value="${fov_deg*deg2rad}"/>
+    <xacro:property name="min_range" value="${0.01*cm2m}"/>
+    <xacro:property name="max_range" value="${15*cm2m}"/>
+    <xacro:property name="samples" value="${fov_deg/5}"/>
+    <xacro:property name="sensor_name" value="cliff_${name}"/>
+    <xacro:property name="detection_threshold" value="${8*cm2m}"/>
+    <joint name="${sensor_name}_joint" type="fixed">
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}"/>
+      <child link="${sensor_name}"/>
+    </joint>
+    <link name="${sensor_name}">
+      <xacro:inertial_dummy/>
+    </link>
+  </xacro:macro>
+</robot>

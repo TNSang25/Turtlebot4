@@ -1,0 +1,22 @@
+robot_description — upstream attribution and local adaptations
+
+TurtleBot4 description / meshes: Clearpath Robotics, Inc. (Apache-2.0).
+https://github.com/turtlebot/turtlebot4/tree/a6ee13b63cbd524500cc6a68cd20dbef69f326a9/turtlebot4_description
+Sources: urdf/standard/, urdf/sensors/, corresponding meshes/*.dae.
+License: LICENSE.
+
+Create 3 description / meshes: Copyright 2021 iRobot Corporation (BSD-3-Clause).
+https://github.com/iRobotEducation/create3_sim/tree/7d7a4f69a503d4eef22f13aeb8755c86955b8cc5/irobot_create_common/irobot_create_description
+Sources: urdf/create3/, meshes/body_visual.dae, meshes/bumper_*.dae.
+License: LICENSE.create3.
+
+Both versions are from the Humble branches, fetched as individual files;
+no repository was cloned. All DAE mesh files retain the original bytes.
+Local xacro adaptations: relative include paths, mesh URIs relocated to
+robot_description, Fortress branches selected, original runtime sensors and
+control plugins replaced by urdf/turtlebot4.gazebo.xacro for workspace topics.
+Mechanical links/joints, visual/collision geometry, inertias and contact/spring
+parameters are unchanged. No generated URDF or generation step is required.
+
+Local integration copyright 2026 robot_* workspace contributors (Apache-2.0).
+This redistribution does not imply endorsement by the upstream developers.

@@ -1,0 +1,79 @@
+# SPDX-License-Identifier: Apache-2.0
+# Based on TurtleBot 4 Humble (Apache-2.0):
+# https://github.com/turtlebot/turtlebot4/blob/humble/turtlebot4_navigation/config/slam.yaml
+# Simulator overrides: ROS clock, absolute scan topic, lidar minimum range,
+# map saver enabled, interactive graph editing disabled, bounded graph growth
+# while stationary and a 1 s occupancy-map publication interval.
+slam_toolbox:
+  ros__parameters:
+
+    # Plugin params
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+
+    # ROS frames must match robot_description and the Gazebo bridge.
+    use_sim_time: true
+    use_map_saver: true
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+    scan_topic: /scan
+    mode: mapping
+
+    debug_logging: false
+    throttle_scans: 1
+    transform_publish_period: 0.02 # map -> odom, seconds
+    map_update_interval: 1.0
+    resolution: 0.05
+    # Round just above the sensor minimum (0.164 m): LaserScan uses float32.
+    min_laser_range: 0.165
+    max_laser_range: 12.0
+    minimum_time_interval: 0.25 # seconds; limits accepted scans in Humble 2.6.10
+    transform_timeout: 0.2
+    tf_buffer_duration: 30.
+    stack_size_to_use: 40000000 # stack for serializing large pose graphs
+    enable_interactive_mode: false # no manual pose-graph editing in our RViz config
+
+    # General Parameters
+    use_scan_matching: true
+    use_scan_barycenter: true
+    # Do not add duplicate graph nodes indefinitely while stationary.
+    # Humble 2.6.10 also gates scans on translation before checking heading;
+    # pure rotation alone may not add a new graph node (see README).
+    minimum_travel_distance: 0.05
+    minimum_travel_heading: 0.10
+    scan_buffer_size: 20
+    scan_buffer_maximum_scan_distance: 12.0
+    link_match_minimum_response_fine: 0.1
+    link_scan_maximum_distance: 1.5
+    loop_search_maximum_distance: 3.0
+    do_loop_closing: true
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    loop_match_minimum_response_fine: 0.45
+
+    # Local scan correlation
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1
+
+    # Loop closure correlation
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+
+    # Scan Matcher Parameters
+    distance_variance_penalty: 0.5
+    angle_variance_penalty: 1.0
+
+    fine_search_angle_offset: 0.00349
+    coarse_search_angle_offset: 0.349
+    coarse_angle_resolution: 0.0349
+    minimum_angle_penalty: 0.9
+    minimum_distance_penalty: 0.5
+    use_response_expansion: true

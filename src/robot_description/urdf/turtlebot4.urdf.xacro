@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot name="turtlebot4" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Official TurtleBot4 Standard + Create 3 xacros, included directly. -->
+  <xacro:arg name="robot_name" default="turtlebot4"/>
+  <xacro:arg name="simulation" default="true"/>
+  <xacro:arg name="enable_camera" default="false"/>
+  <xacro:arg name="simulation_config" default="../config/simulation.yaml"/>
+  <xacro:attribute name="name" value="$(arg robot_name)"/>
+  <xacro:include filename="standard/turtlebot4.urdf.xacro"/>
+  <xacro:if value="$(arg simulation)">
+    <xacro:property name="d" value="${xacro.load_yaml('$(arg simulation_config)')}"/>
+    <xacro:include filename="turtlebot4.gazebo.xacro"/>
+  </xacro:if>
+</robot>

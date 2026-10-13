@@ -1,0 +1,14 @@
+The robot-specific config/nav2.yaml is adapted from:
+  https://github.com/ros-navigation/navigation2/blob/humble/nav2_bringup/params/nav2_params.yaml
+  Navigation2 contributors; nav2_bringup is licensed under Apache-2.0.
+
+The original parameter file does not contain a file-level copyright notice.
+The upstream launch files are included at runtime, not copied into this package.
+
+Reference for TurtleBot4 footprint and coordinate conventions:
+  https://github.com/turtlebot/turtlebot4/blob/humble/turtlebot4_navigation/config/nav2.yaml
+  TurtleBot4 contributors; turtlebot4_navigation is licensed under Apache-2.0.
+
+Local changes: base_link throughout; simulated scan range and circular footprint;
+conservative differential-drive acceleration; 2D obstacle layers; SLAM-compatible
+map updates; no assumption that the robot starts at the map origin.
