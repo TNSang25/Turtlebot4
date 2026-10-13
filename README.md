@@ -4,8 +4,6 @@ Workspace mô phỏng TurtleBot4 Standard với mô hình chính thức của Tu
 và iRobot Create 3, SLAM Toolbox để xây dựng bản đồ, AMCL để định vị và Nav2
 để điều hướng. Quy trình chạy: **simulation → mapping → localization → navigation**.
 
-Báo cáo: [Markdown](docs/bao_cao_turtlebot4.md) · [PDF](docs/bao_cao_turtlebot4.pdf).
-
 ## 1. Cấu trúc chương trình
 
 ```text
@@ -40,13 +38,12 @@ Turtlebot4/                  # Thư mục gốc repo GitHub
 │   ├── launch/        # localization.launch.py, navigation.launch.py
 │   ├── rviz/
 │   └── licenses/
-├── robot_node/
-│   ├── setup.py, setup.cfg, package.xml
-│   ├── robot_node/    # Teleop và xử lý vận tốc
-│   ├── resource/      # Marker đăng ký package Python
-│   ├── test/
-│   └── licenses/
-└── docs/             # Báo cáo, hình minh họa, dữ liệu và script xuất PDF
+└── robot_node/
+    ├── setup.py, setup.cfg, package.xml
+    ├── robot_node/    # Teleop và xử lý vận tốc
+    ├── resource/      # Marker đăng ký package Python
+    ├── test/
+    └── licenses/
 ```
 
 | Package | Vai trò |
@@ -62,7 +59,7 @@ hướng dẫn, đặt nội dung repo vào `~/workspaces/turtlebot4_ws/src/`:
 
 ```text
 turtlebot4_ws/
-├── src/            # README.md, docs/ và 5 thư mục robot_* của repo
+├── src/            # README.md và 5 thư mục robot_* của repo
 ├── build/          # colcon tạo khi build
 ├── install/        # Các package được cài đặt sau build
 └── log/            # Log của colcon
@@ -318,7 +315,7 @@ ros2 topic pub --once /cmd_vel geometry_msgs/msg/Twist '{}'
 ## 6. Map, SLAM và kiểm tra lỗi
 
 Map SLAM để chạy AMCL nằm trong `robot_navigation/maps/`. Map mẫu của world
-nằm trong `robot_sim/maps/`; dữ liệu minh họa báo cáo nằm trong `docs/data/`.
+nằm trong `robot_sim/maps/`.
 Lưu map vào source giữ dữ liệu khi xóa `build/` hoặc `install/`. `maps/` được
 cài cùng package khi build; cần build lại sau khi thêm map nếu muốn dùng bản
 trong `install/`. Quy trình ở mục 3 nạp trực tiếp map từ source.
