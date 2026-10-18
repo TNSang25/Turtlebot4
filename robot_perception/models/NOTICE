@@ -1,0 +1,5 @@
+Download yolov8n.pt from the official Ultralytics assets release with scripts/download_model.py.
+Weights: https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8n.pt
+YOLOv8 documentation/license: https://docs.ultralytics.com/models/yolov8/
+The pretrained model uses COCO classes. Fire extinguishers are not a COCO class.
+Model weights and Python model dependencies are separate from this package's ROS adapter.

@@ -1,0 +1,14 @@
+yolo_detector:
+  ros__parameters:
+    use_sim_time: true
+    image_topic: /camera/image
+    annotated_topic: /detections/image
+    detections_topic: /detections/objects
+    device: cpu
+    confidence: 0.35
+    image_size: 640
+    inference_rate: 3.0
+    cpu_threads: 2
+    max_frame_age: 2.0
+    show_window: false
+    log_interval: 2.0

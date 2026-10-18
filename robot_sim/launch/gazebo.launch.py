@@ -31,7 +31,8 @@ def _launch(context):
     # SDF resolves package://robot_description meshes relative to this parent.
     # Keep the caller's model paths as well, for custom worlds.
     share_parent = str(Path(get_package_share_directory('robot_description')).parent)
-    resources = {key: os.pathsep.join(filter(None, [share_parent, os.environ.get(key)]))
+    models = str(Path(get_package_share_directory('robot_sim')) / 'models')
+    resources = {key: os.pathsep.join(filter(None, [share_parent, models, os.environ.get(key)]))
                  for key in ('IGN_GAZEBO_RESOURCE_PATH', 'GZ_SIM_RESOURCE_PATH')}
     return [LogInfo(msg=f'Gazebo Fortress world: {world}'),
             ExecuteProcess(cmd=cmd, output='screen', on_exit=Shutdown(),

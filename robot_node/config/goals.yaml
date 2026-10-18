@@ -1,0 +1,7 @@
+# Example positions checked against the current demo/my_map occupancy grid.
+# Survey your own map with goal_recorder and pass goals_file:=... for the lab.
+frame_id: map
+goals:
+  - {name: Goal 1, x: -1.5, y: 0.0, yaw: 0.0}
+  - {name: Goal 2, x: -1.5, y: 2.5, yaw: 1.5708}
+  - {name: Goal 3, x: 2.5, y: 2.5, yaw: 0.0}
