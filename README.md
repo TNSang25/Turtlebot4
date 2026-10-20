@@ -57,9 +57,6 @@ Turtlebot4/                         # Thư mục gốc repo
 | `robot_node` | Teleop lúc khảo sát, ghi goal và chạy mission tự động. |
 | `robot_perception` | Nhận ảnh, chuyển đổi bằng cv_bridge, chạy YOLO và xuất ảnh nhận diện. |
 
-Mỗi package có `package.xml` và `licenses/`. `robot_node` và
-`robot_perception` dùng `ament_python`; các package còn lại dùng `ament_cmake`.
-
 ## 2. Clone và cài đặt
 
 Yêu cầu **Ubuntu 22.04, ROS 2 Humble** đã cài đặt. Cài dependency:
@@ -118,11 +115,6 @@ source install/setup.bash
 export ROS_DOMAIN_ID=69
 ```
 
-Các lệnh bên dưới chạy từ thư mục `turtlebot4_ws`. Sử dụng bản đồ đã xây dựng
-ở `src/robot_navigation/maps/my_map.yaml` cùng ảnh `my_map.pgm`. Nếu map của
-bạn tên `map.yaml`, thay đường dẫn tương ứng; giữ YAML và ảnh mà nó tham chiếu
-trong cùng thư mục. Không chạy SLAM cùng AMCL trong bài sử dụng lại map này.
-
 ### Bước 1 — Simulation trong đúng world
 
 Terminal 1:
@@ -130,11 +122,6 @@ Terminal 1:
 ```bash
 ros2 launch robot_sim sim.launch.py world:=demo_objects enable_camera:=true
 ```
-
-`demo_objects` giữ nguyên tường và vật cản của world `demo` đã dùng lập map,
-thêm ba model người 3D từ OSRF. Map cũ không được tạo lại. Nếu tuần trước dùng
-world khác, truyền đúng world đó bằng `world:=...`; dùng `world:=demo` để
-chạy phòng gốc. Giữ simulation chạy suốt phiên.
 
 ### Bước 2 — Nạp map và localization
 
@@ -145,12 +132,8 @@ ros2 launch robot_navigation localization.launch.py \
   map:=$PWD/src/robot_navigation/maps/my_map.yaml
 ```
 
-Trong RViz đặt **Global Options → Fixed Frame = map** (có thể gõ trực tiếp),
-rồi dùng **2D Pose Estimate** đặt vị trí và hướng hiện tại của robot. Kiểm tra
-LiDAR `/scan` trùng các tường trên bản đồ. Nếu biết pose trong map, có thể
-truyền `set_initial_pose:=true` cùng `initial_pose_x:=...`, `initial_pose_y:=...`
-và `initial_pose_yaw:=...` khi launch; yaw dùng radian, không mặc định robot ở
-`(0, 0)` nếu nó đã di chuyển hoặc map khác gốc.
+Trong RViz dùng **2D Pose Estimate** đặt vị trí và hướng hiện tại của robot. Kiểm tra
+LiDAR `/scan` trùng các tường trên bản đồ.
 
 Terminal phụ kiểm tra:
 
@@ -160,8 +143,7 @@ ros2 lifecycle get /map_server
 ros2 run tf2_ros tf2_echo map base_link
 ```
 
-Hai node phải `active` và TF xuất pose. Dừng riêng `tf2_echo` bằng `Ctrl+C`;
-**giữ localization và RViz chạy**.
+Hai node phải `active` và TF xuất pose.
 
 ### Bước 3 — Khảo sát và ghi ít nhất 3 goal
 
@@ -201,12 +183,6 @@ goals:
   - {name: Goal 2, x: -1.5, y: 2.5, yaw: 1.5708}
   - {name: Goal 3, x: 2.5, y: 2.5, yaw: 0.0}
 ```
-
-Đây là ví dụ cho map demo, không thay thế tọa độ tự khảo sát. Kiểm tra/chỉnh
-`goals.yaml` để có ít nhất ba vị trí khác nhau, yaw đúng hướng mong muốn,
-trong vùng đã biết và đủ khoảng trống cho robot. Recorder thêm vào file đã
-có; chọn tên file mới nếu muốn ghi một bộ goal mới.
-
 Sau khi khảo sát, `Ctrl+C` tắt **teleop và goal_recorder**.
 
 ### Bước 4 — Khởi động Nav2
@@ -243,10 +219,6 @@ Trong RViz bật **YOLO Detections**, hoặc **Add → Image** rồi chọn
 confidence; ảnh không có detection vượt ngưỡng vẫn được xuất.
 Để mở cửa sổ OpenCV, thêm `show_window:=true`; `Ctrl+C` dừng node.
 
-Trong kiểm thử có phát hiện đúng `person` và cũng có nhãn sai thoáng qua trên
-chi tiết của scene. Model COCO chưa được tinh chỉnh cho Gazebo; cần xem ảnh,
-confidence và dùng dữ liệu phù hợp để đánh giá độ chính xác.
-
 Camera trong workspace dùng `/camera/image`. Nếu dùng topic khác, truyền
 `image_topic:=/oakd/rgb/preview/image_raw`. Cấu hình tốc độ inference, confidence,
 CPU threads và device nằm trong `robot_perception/config/yolo.yaml`.
@@ -259,12 +231,6 @@ Terminal 5:
 ros2 launch robot_node waypoints.launch.py \
   goals_file:=$PWD/src/robot_navigation/maps/goals.yaml
 ```
-
-Node `waypoint_navigator` chờ map, TF và Nav2 active, kiểm tra footprint tại
-các goal, rồi gửi từng action `/navigate_to_pose`. Chỉ khi Goal 1 trả
-`SUCCEEDED` mới gửi Goal 2, tiếp đó Goal 3. Dừng 2 giây tại mỗi điểm để quan
-sát camera. Nav2 lập kế hoạch và tránh vật cản bằng costmap/LiDAR; YOLO cung
-cấp kết quả nhận diện độc lập.
 
 **Từ lúc chạy node này, không bật teleop và không dùng chuột đặt Nav2 Goal.**
 Nếu một goal bị từ chối, thất bại hoặc quá thời gian, chuỗi dừng; `Ctrl+C`
