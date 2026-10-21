@@ -76,7 +76,7 @@ Với workspace mới, clone repo vào thư mục `src/` chưa có nội dung:
 ```bash
 mkdir -p ~/workspaces/turtlebot4_ws
 cd ~/workspaces/turtlebot4_ws
-git clone https://github.com/TNSang25/Turtlebot4.git src
+git clone -b assignment_5 --single-branch https://github.com/TNSang25/Turtlebot4.git src
 ```
 
 Nếu workspace đã có các package, bỏ qua bước clone. Sau đó cài YOLO trong
