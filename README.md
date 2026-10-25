@@ -63,11 +63,12 @@ source install/setup.bash
 export ROS_DOMAIN_ID=69
 ```
 
-**Bước 1 — Terminal 1: mở mô phỏng.** World `demo` có vùng trống cho các hành vi.
-Bài này dùng webcam laptop nên có thể tắt camera trên robot.
+**Bước 1 — Terminal 1: mở mô phỏng.** World `arena` có sàn trống 20 × 20 m và
+bốn tường bao, robot xuất hiện ở giữa. Bài này dùng webcam laptop nên có thể
+tắt camera trên robot.
 
 ```bash
-ros2 launch robot_sim sim.launch.py world:=demo enable_camera:=false
+ros2 launch robot_sim sim.launch.py world:=arena enable_camera:=false
 ```
 
 **Bước 2 — Terminal 2: mở webcam và node điều khiển.**
@@ -82,8 +83,9 @@ ros2 launch robot_gesture gesture_control.launch.py \
 Đổi `camera_index:=1` nếu cần chọn webcam khác. `control_robot:=false` chỉ
 thử nhận diện; khi đó dòng `controller not connected` là bình thường.
 
-**Bước 3 — Điều khiển bằng tay.** Đưa một tay vào ảnh, giữ cử chỉ chọn khoảng
-0,5 giây, chờ `Selected`, rồi giơ ngón cái để xác nhận.
+**Bước 3 — Điều khiển bằng tay.** Đưa một tay vào ảnh, chờ `Selected`, rồi giơ
+ngón cái để xác nhận. Lựa chọn được lưu, không hết hạn khi đổi tay hoặc chờ
+xác nhận; có thể chọn hành vi khác hoặc nắm tay để hủy.
 
 | Cử chỉ | Hành vi |
 | --- | --- |
@@ -94,8 +96,11 @@ thử nhận diện; khi đó dòng `controller not connected` là bình thườ
 | Xòe bàn tay đứng yên | Dừng ngay. |
 | Nắm tay, gập cả ngón cái | Hủy hành vi, trở về chờ. |
 
-Giữ tay với cử chỉ hợp lệ trong ảnh khi robot chạy. Robot tự dừng khi mất tín
-hiệu, thiếu dữ liệu cảm biến hoặc gặp vật cản gần. Không chạy teleop hoặc Nav2
+Giữ tay với cử chỉ hợp lệ trong ảnh khi robot chạy. Robot đang chạy sẽ dừng khi
+mất tín hiệu, thiếu dữ liệu cảm biến hoặc gặp vật cản gần. Dòng `Reason` cho
+biết vì sao chưa chạy; đi tròn cần khoảng trống ít nhất 1,60 m quanh robot với
+cấu hình mặc định. Nếu xác nhận bị chặn, xử lý nguyên nhân, xòe tay rồi xác
+nhận lại; lựa chọn vẫn được giữ. Không chạy teleop hoặc Nav2
 cùng lúc với điều khiển cử chỉ. Đóng cửa sổ webcam hoặc `Ctrl+C` để kết thúc.
 
 Terminal phụ kiểm tra:

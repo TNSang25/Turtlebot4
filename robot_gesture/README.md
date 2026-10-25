@@ -52,10 +52,11 @@ source install/setup.bash
 export ROS_DOMAIN_ID=69
 ```
 
-**1. Terminal 1 — Simulation:** vùng giữa phòng demo đủ rộng cho các quỹ đạo mặc định.
+**1. Terminal 1 — Simulation:** world `arena` có sàn trống 20 × 20 m và bốn
+tường bao, robot ở giữa để thử các hành vi.
 
 ```bash
-ros2 launch robot_sim sim.launch.py world:=demo enable_camera:=false
+ros2 launch robot_sim sim.launch.py world:=arena enable_camera:=false
 ```
 
 **2. Terminal 2 — Webcam và hai node điều khiển:**
@@ -71,8 +72,9 @@ ros2 launch robot_gesture gesture_control.launch.py \
 
 **3. Demo bằng tay:**
 
-1. Đưa một tay vào khung hình; giữ cử chỉ chọn khoảng 0,5 giây.
-2. Chờ cửa sổ hiện `Selected`, rồi giữ Thumbs Up để xác nhận.
+1. Đưa một tay vào khung hình, chờ cửa sổ hiện `Selected`.
+2. Đổi sang Thumbs Up để xác nhận. Lựa chọn không hết hạn trong lúc chờ,
+   kể cả khi xuất hiện `Unknown` hoặc `No_Hand`.
 3. Giữ tay với một cử chỉ hợp lệ trong khung hình khi robot đang chạy.
 4. Xòe tay để dừng hoặc nắm tay để hủy; chọn và xác nhận lại nếu muốn chạy tiếp.
 
@@ -83,12 +85,22 @@ Giữ trọn bàn tay trong ảnh. `Unknown` thoáng qua lúc đổi cử chỉ 
 nếu kéo dài, xem dòng `Model` và `pose` để phân biệt chưa thấy tay hay chưa
 khớp tư thế. Dùng `control_robot:=false` để thử nhận diện trước.
 
-Giữ một cử chỉ không kích hoạt lặp hành vi. Lựa chọn mới trong khi robot
-đang chạy được bỏ qua; hai cử chỉ dừng/hủy luôn được ưu tiên.
+Node lưu sự kiện cử chỉ đã chấp nhận (`Accepted`), kết hợp với lựa chọn đang
+chờ để xử lý cử chỉ tiếp theo. Hai bản tin nhận diện liên tiếp tạo một sự kiện;
+không áp thêm bộ đếm thời gian xác nhận. Giữ một cử chỉ không kích hoạt lặp
+hành vi. Có thể thay lựa chọn bằng cử chỉ chọn khác, hoặc nắm tay để xóa.
+Lựa chọn mới trong khi robot đang chạy được bỏ qua; dừng/hủy luôn được ưu tiên.
 
-Node dừng khi mất tay/cử chỉ hợp lệ khoảng 0,40 giây, mất bản tin 0,75 giây,
-thiếu dữ liệu LiDAR/odom hoặc vật cản quá gần. Vòng tròn chỉ được bắt đầu khi
-LiDAR cho thấy đủ vùng trống. Thông số nằm trong `config/gesture_control.yaml`.
+Trong lúc chạy, node dừng và yêu cầu chọn lại khi mất tay/cử chỉ hợp lệ khoảng
+0,40 giây, mất bản tin 0,75 giây, thiếu LiDAR/odom hoặc vật cản quá gần. Khi
+chỉ đang chờ xác nhận, lựa chọn vẫn được giữ. Bộ lọc nhận diện vẫn lọc nhiễu
+ngắn trước khi gửi bản tin.
+
+Nếu `Running` chưa có hành vi, xem dòng `Reason`: thiếu cảm biến, TF hoặc
+không đủ khoảng trống. Với bán kính 0,60 m, đi tròn cần khoảng trống ít nhất
+1,60 m quanh robot. Xác nhận bị chặn không xóa lựa chọn; sau khi xử lý nguyên
+nhân, xòe tay rồi Thumbs Up để xác nhận lại. Giữ nguyên Thumbs Up không tự chạy
+lại khi điều kiện thay đổi. Thông số nằm trong `config/gesture_control.yaml`.
 
 Không chạy teleop, Nav2 hoặc node khác gửi `/cmd_vel` cùng lúc. Không cần
 bàn phím để điều khiển robot trong demo; đóng cửa sổ webcam để kết thúc.

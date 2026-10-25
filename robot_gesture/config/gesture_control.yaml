@@ -16,7 +16,7 @@ gesture_recognition_node:
 robot_behavior_node:
   ros__parameters:
     use_sim_time: true
-    stable_time: 0.25
+    stable_frames: 2  # observations per event; pending choices never expire
     signal_timeout: 0.75
     hand_timeout: 0.40
     sensor_timeout: 0.8

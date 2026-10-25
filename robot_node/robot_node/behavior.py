@@ -11,7 +11,7 @@ VALID = set(CHOICES) | {'Thumb_Up', 'Open_Palm', 'Closed_Fist'}
 
 @dataclass(frozen=True)
 class BehaviorConfig:
-    stable_time: float = 0.25
+    stable_frames: int = 2
     signal_timeout: float = 0.75
     hand_timeout: float = 0.40
     linear_speed: float = 0.12
@@ -25,6 +25,8 @@ class BehaviorConfig:
     rotation_clearance: float = 0.30
 
     def __post_init__(self):
+        if isinstance(self.stable_frames, bool) or not isinstance(self.stable_frames, int):
+            raise ValueError('stable_frames must be a positive integer')
         for name, value in vars(self).items():
             if not math.isfinite(value) or value <= 0:
                 raise ValueError(f'{name} must be finite and positive')
@@ -69,7 +71,7 @@ class BehaviorEngine:
         self.selected = self.action = None
         self.last_message = self.last_valid = None
         self.candidate = self.committed = None
-        self.candidate_since = 0.0
+        self.candidate_count = 0
         self.start_requested = False
         self.phase = 0
         self.phases = []
@@ -90,6 +92,7 @@ class BehaviorEngine:
         self.last_message = now
         if label not in VALID:
             self.candidate = None
+            self.candidate_count = 0
             return
         self.last_valid = now
         if label == 'Open_Palm':
@@ -97,14 +100,22 @@ class BehaviorEngine:
             # not erase it. An interrupted running motion must be selected again.
             self.stop('stopped', 'Open_Palm: stopped', clear_selection=self.active)
             self.candidate = self.committed = label
+            self.candidate_count = self.config.stable_frames
+            if self.selected:
+                self.state, self.reason = 'selected', 'Selection kept; confirm with Thumb_Up or cancel with Closed_Fist'
             return
         if label == 'Closed_Fist':
             self.stop('idle', 'Closed_Fist: canceled')
             self.candidate = self.committed = label
+            self.candidate_count = self.config.stable_frames
             return
         if label != self.candidate:
-            self.candidate, self.candidate_since = label, now
-        if now - self.candidate_since < self.config.stable_time or label == self.committed:
+            self.candidate, self.candidate_count = label, 1
+        else:
+            self.candidate_count += 1
+        # Recognition already filters model confidence and short-lived poses.
+        # Count observations here, rather than impose another time deadline.
+        if self.candidate_count < self.config.stable_frames or label == self.committed:
             return
         self.committed = label
         if self.active:
@@ -114,6 +125,9 @@ class BehaviorEngine:
             self.state, self.reason = 'selected', 'Confirm with Thumb_Up'
         elif label == 'Thumb_Up' and self.selected:
             self.start_requested = True
+            self.state, self.reason = 'confirming', 'Thumb_Up accepted; checking sensors and clearance'
+        elif label == 'Thumb_Up':
+            self.state, self.reason = 'idle', 'No pending behavior; select a gesture before Thumb_Up'
 
     def _phase_start(self, pose, now):
         self.origin = pose
@@ -129,16 +143,25 @@ class BehaviorEngine:
         if (self.last_message is None or self.last_valid is None
                 or now - self.last_message > c.signal_timeout
                 or now - self.last_valid > c.hand_timeout):
-            self.stop('signal_lost', 'Hand/control signal lost: select and confirm again')
-            self.candidate = self.committed = None
-            # A held confirmation must never restart a canceled behavior.
+            if self.active:
+                self.stop('signal_lost', 'Hand/control signal lost: select and confirm again')
+                self.committed = None
+            else:
+                # A pending selection is memory, not a motion command. It
+                # survives any waiting time/Unknown/No_Hand, without moving.
+                self.start_requested = False
+            self.candidate, self.candidate_count = None, 0
             return 0.0, 0.0
         if self.start_requested:
             if sensor_error or pose is None:
-                self.stop('blocked', sensor_error or 'No odometry')
+                self.stop('blocked', sensor_error or 'No odometry', clear_selection=False)
                 return 0.0, 0.0
             if self.selected == 'circle' and around < 2*c.circle_radius + c.stop_distance:
-                self.stop('blocked', 'Not enough clear space for a full circle')
+                self.stop('blocked', f'Circle blocked: clearance {around:.2f} m; '
+                          f'need {2*c.circle_radius+c.stop_distance:.2f} m', clear_selection=False)
+                return 0.0, 0.0
+            if around < c.rotation_clearance or (self.selected != 'greeting' and clearance < c.stop_distance):
+                self.stop('blocked', 'Obstacle: clear the area, then confirm again', clear_selection=False)
                 return 0.0, 0.0
             self.action, self.selected = self.selected, None
             self.start_requested = False
@@ -189,4 +212,5 @@ class BehaviorEngine:
 
     def snapshot(self):
         return {'state': self.state, 'selected': self.selected, 'action': self.action,
-                'phase': self.phase, 'total_phases': len(self.phases), 'reason': self.reason}
+                'last_gesture': self.committed, 'phase': self.phase,
+                'total_phases': len(self.phases), 'reason': self.reason}

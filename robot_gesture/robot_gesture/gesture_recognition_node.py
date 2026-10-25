@@ -5,6 +5,7 @@ import json
 import math
 from pathlib import Path
 import time
+import textwrap
 
 from ament_index_python.packages import get_package_share_directory
 import rclpy
@@ -104,12 +105,14 @@ class GestureRecognitionNode(Node):
             for point in points:
                 cv2.circle(frame, point, 3, (0, 200, 255), -1)
         state = self.behavior if time.monotonic()-self.behavior_time < 2 else {}
-        lines = [f'Gesture: {label}', self.recognition_detail,
+        lines = [f'Gesture: {label} | Accepted: {state.get("last_gesture") or "-"}', self.recognition_detail,
                  f'State: {state.get("state", "controller not connected")}  '
-                 f'Selected: {state.get("selected") or "-"}  Running: {state.get("action") or "-"}',
-                 'Select: Wave / Pointing_Up / Victory -> hold Thumb_Up to confirm',
-                 'Open_Palm: STOP | Closed_Fist: CANCEL | Keep hand in view']
-        cv2.rectangle(frame, (0, 0), (width, 129), (25, 25, 25), -1)
+                 f'Selected: {state.get("selected") or "-"}  Running: {state.get("action") or "-"}']
+        reason = 'Reason: '+str(state.get('reason') or '-')
+        lines += textwrap.wrap(reason, width=max(30, width//8))[:2]
+        lines += ['Select a gesture -> Thumb_Up to confirm (no selection timeout)',
+                  'Open_Palm: STOP | Closed_Fist: CANCEL | Keep hand in view']
+        cv2.rectangle(frame, (0, 0), (width, 9+24*len(lines)), (25, 25, 25), -1)
         for i, line in enumerate(lines):
             cv2.putText(frame, line, (8, 22+24*i), cv2.FONT_HERSHEY_SIMPLEX,
                         .47 if i else .65, (255, 255, 255), 1, cv2.LINE_AA)

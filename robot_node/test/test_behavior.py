@@ -170,7 +170,73 @@ def test_lidar_sectors_are_transformed_into_the_robot_frame():
 
 
 @pytest.mark.parametrize('options', [{'linear_speed':float('nan')}, {'linear_speed':.5},
-                                    {'circle_radius':.01}, {'stable_time':0}])
+                                    {'circle_radius':.01}, {'stable_frames':0},
+                                    {'stable_frames':1.5}, {'stable_frames':True}])
 def test_invalid_motion_parameters_are_rejected(options):
     with pytest.raises(ValueError):
         BehaviorConfig(**options)
+
+
+@pytest.mark.parametrize('choice', ['Wave', 'Pointing_Up', 'Victory'])
+@pytest.mark.parametrize('lost', ['Unknown', 'No_Hand', None])
+@pytest.mark.parametrize('delay', [2., 60.])
+def test_selection_waits_for_next_action_without_a_confirmation_deadline(choice, lost, delay):
+    engine = BehaviorEngine()
+    hold(engine, choice, 0)
+    selected = engine.selected
+    for now in (.8, delay):
+        if lost:
+            engine.receive(lost, now)
+        assert engine.tick(now, None, sensor_error='No sensor data') == (0, 0)
+        assert engine.selected == selected
+        assert not engine.active
+    # The next valid event can confirm the remembered choice, however long
+    # the operator took to change hand poses.
+    now = hold(engine, 'Thumb_Up', delay+.1)
+    engine.tick(now, (0, 0, 0))
+    assert engine.active
+    assert engine.action == selected
+    assert engine.snapshot()['last_gesture'] == 'Thumb_Up'
+
+
+def test_events_use_observations_instead_of_a_second_stability_timer():
+    engine = BehaviorEngine()
+    engine.receive('Pointing_Up', 0.)
+    assert engine.selected is None  # One erroneous observation is insufficient.
+    engine.receive('Pointing_Up', .001)
+    assert engine.selected == 'back_forth'
+    engine.receive('Thumb_Up', .002)
+    assert not engine.start_requested
+    engine.receive('Thumb_Up', .003)
+    assert engine.tick(.003, (0, 0, 0))[0] > 0
+
+
+def test_new_choice_replaces_pending_choice_and_fist_erases_memory():
+    engine = BehaviorEngine()
+    hold(engine, 'Wave', 0)
+    engine.tick(5., None)
+    hold(engine, 'Victory', 6.)
+    assert engine.selected == 'circle'
+    engine.receive('Closed_Fist', 7.)
+    assert engine.selected is None
+    now = hold(engine, 'Thumb_Up', 8.)
+    assert engine.tick(now, (0, 0, 0)) == (0, 0)
+    assert 'No pending behavior' in engine.reason
+
+
+@pytest.mark.parametrize('guard', [dict(sensor_error='No scan'), dict(around=1.), dict(clearance=.2)])
+def test_blocked_confirmation_keeps_choice_and_requires_a_new_confirmation_event(guard):
+    engine = BehaviorEngine()
+    hold(engine, 'Victory', 0)
+    now = hold(engine, 'Thumb_Up', .4)
+    assert engine.tick(now, (0, 0, 0), **guard) == (0, 0)
+    assert engine.state == 'blocked'
+    assert engine.selected == 'circle'
+    assert not engine.start_requested
+    # Removing a guard while holding the same thumb must not start a robot
+    # unexpectedly. Show another recognized gesture, then confirm again.
+    now = hold(engine, 'Thumb_Up', 1.)
+    assert engine.tick(now, (0, 0, 0)) == (0, 0)
+    engine.receive('Open_Palm', 1.5)
+    now = hold(engine, 'Thumb_Up', 1.6)
+    assert engine.tick(now, (0, 0, 0)) == pytest.approx((.12, .2))
