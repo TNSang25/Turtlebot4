@@ -1,116 +1,60 @@
-# TurtleBot4 — Localization, Navigation tự động và YOLO
+# TurtleBot 4 — Điều khiển bằng cử chỉ tay
 
-ROS 2 Humble / Gazebo Fortress. Sử dụng lại map SLAM đã lưu, định vị bằng
-AMCL, tự động đi qua các goal bằng Nav2 và nhận diện vật thể từ camera RGB.
+ROS 2 Humble, Gazebo Fortress, webcam laptop và MediaPipe. Robot nhận cử chỉ
+chọn hành vi, chờ xác nhận rồi thực hiện. Repo có thêm SLAM, Nav2 và YOLO.
 
-Bài điều khiển bằng cử chỉ tay (webcam + MediaPipe): xem
-[robot_gesture/README.md](robot_gesture/README.md).
+## 1. Các package
 
-## 1. Cấu trúc chương trình
-
-```text
-Turtlebot4/                         # Thư mục gốc repo
-├── README.md
-├── robot_description/
-│   ├── urdf/                      # TurtleBot4, Create 3, cảm biến và plugin
-│   ├── meshes/                    # Mesh chính thức
-│   ├── config/                    # simulation.yaml
-│   ├── launch/
-│   └── rviz/
-├── robot_sim/
-│   ├── worlds/                    # demo, empty, demo_objects
-│   ├── models/person_standing/    # Model người 3D từ OSRF
-│   ├── maps/                      # Map mẫu hình học của world demo
-│   ├── config/                    # Bridge ROS–Gazebo
-│   ├── launch/                    # sim, gazebo, spawn, bridge
-│   └── scripts/
-├── robot_mapping/
-│   ├── config/                    # slam.yaml
-│   ├── launch/                    # mapping, save_map
-│   └── rviz/
-├── robot_navigation/
-│   ├── maps/                      # my_map.yaml + my_map.pgm đã xây dựng
-│   ├── config/                    # nav2.yaml: AMCL, planner, controller
-│   ├── launch/                    # localization, navigation
-│   └── rviz/                      # Map, Publish Point, camera, ảnh YOLO
-├── robot_node/
-│   ├── robot_node/
-│   │   ├── teleop_keyboard.py
-│   │   ├── goal_recorder.py        # Ghi tọa độ khảo sát vào YAML
-│   │   ├── goals.py                # Kiểm tra goal và khoảng trống trên map
-│   │   └── waypoint_navigator.py   # Gửi tuần tự action /navigate_to_pose
-│   ├── config/goals.yaml          # 3 goal mẫu cho demo; cần khảo sát lại
-│   ├── launch/waypoints.launch.py
-│   └── test/
-└── robot_perception/
-    ├── robot_perception/yolo_detector.py
-    ├── config/yolo.yaml
-    ├── launch/yolo.launch.py
-    ├── models/                    # yolov8n.pt sau khi tải
-    ├── scripts/download_model.py
-    └── requirements.txt
-```
-
-| Package | Chức năng |
+| Package | Chức năng / node chính |
 | --- | --- |
-| `robot_description` | Mô tả robot, frame, cảm biến và cấu hình mô phỏng. |
-| `robot_sim` | Mở world, spawn robot và bridge các topic ROS–Gazebo. |
-| `robot_mapping` | SLAM Toolbox và lưu bản đồ khi cần tạo map mới. |
-| `robot_navigation` | Nạp map đã lưu, chạy AMCL và Nav2 bằng các launch riêng. |
-| `robot_node` | Teleop lúc khảo sát, ghi goal và chạy mission tự động. |
-| `robot_perception` | Nhận ảnh, chuyển đổi bằng cv_bridge, chạy YOLO và xuất ảnh nhận diện. |
-| `robot_gesture` | `gesture_recognition_node` nhận cử chỉ webcam; `robot_behavior_node` trong `robot_node` thực hiện hành vi sau xác nhận. |
+| `robot_description` | URDF, mesh chính thức, cảm biến; `robot_state_publisher`. |
+| `robot_sim` | World, spawn robot, bridge ROS–Gazebo; topic `/cmd_vel`, `/odom`, `/scan`, `/camera/image`. |
+| `robot_mapping` | Xây dựng và lưu bản đồ bằng `slam_toolbox`. |
+| `robot_navigation` | Bản đồ trong `maps/`, định vị AMCL và điều hướng Nav2. |
+| `robot_node` | `robot_behavior_node` thực hiện hành vi; thêm teleop, ghi goal và điều hướng qua waypoint. |
+| `robot_perception` | `yolo_detector` nhận diện vật thể từ camera robot. |
+| `robot_gesture` | `gesture_recognition_node` đọc webcam, nhận diện và gửi `/detected_gesture`. |
+
+Luồng điều khiển: **webcam → gesture_recognition_node → /detected_gesture
+→ robot_behavior_node → /cmd_vel → robot trong Gazebo**.
 
 ## 2. Clone và cài đặt
 
-Yêu cầu **Ubuntu 22.04, ROS 2 Humble** đã cài đặt. Cài dependency:
+Yêu cầu **Ubuntu 22.04, ROS 2 Humble và Gazebo Fortress** đã cài đặt.
 
 ```bash
 sudo apt update
-sudo apt install git python3-colcon-common-extensions python3-yaml python3-venv \
-  python3-opencv ros-humble-cv-bridge \
-  ros-humble-ros-gz ros-humble-xacro \
-  ros-humble-robot-state-publisher ros-humble-joint-state-publisher-gui \
-  ros-humble-rviz2 ros-humble-slam-toolbox \
-  ros-humble-navigation2 ros-humble-nav2-bringup
+sudo apt install git python3-colcon-common-extensions python3-venv python3-pip \
+  python3-yaml python3-opencv libportaudio2 \
+  ros-humble-ros-gz ros-humble-xacro ros-humble-robot-state-publisher \
+  ros-humble-joint-state-publisher ros-humble-rviz2 ros-humble-cv-bridge \
+  ros-humble-slam-toolbox ros-humble-navigation2 ros-humble-nav2-bringup
 ```
 
-Với workspace mới, clone repo vào thư mục `src/` chưa có nội dung:
+Clone nhánh `assignment_6` vào `src/` của **workspace mới**. Nếu đã có code,
+bỏ qua bước clone.
 
 ```bash
 mkdir -p ~/workspaces/turtlebot4_ws
 cd ~/workspaces/turtlebot4_ws
-git clone https://github.com/TNSang25/Turtlebot4.git src
+git clone --branch assignment_6 https://github.com/TNSang25/Turtlebot4.git src
 ```
 
-Nếu workspace đã có các package, bỏ qua bước clone. Sau đó cài YOLO trong
-môi trường Python riêng; NumPy được giới hạn ở 1.x để dùng với cv_bridge Humble:
+Cài MediaPipe trong môi trường riêng, tải model và build:
 
 ```bash
 cd ~/workspaces/turtlebot4_ws
-python3 -m venv --system-site-packages .venv-yolo
-.venv-yolo/bin/python -m pip install torch torchvision \
-  --index-url https://download.pytorch.org/whl/cpu
-.venv-yolo/bin/python -m pip install -r src/robot_perception/requirements.txt
-python3 src/robot_perception/scripts/download_model.py
+python3 -m venv --system-site-packages .venv-gesture
+.venv-gesture/bin/python -m pip install -r src/robot_gesture/requirements.txt
+python3 src/robot_gesture/scripts/download_model.py
 
 source /opt/ros/humble/setup.bash
 PYTHONNOUSERSITE=1 colcon build --symlink-install
-source install/setup.bash
 ```
-
-Không cần activate venv khi chạy các node ROS; launch YOLO nhận đường dẫn
-interpreter ở bước chạy bên dưới. Trọng số tải một lần từ Ultralytics,
-có kiểm tra SHA256; không tải model trong quá trình robot di chuyển.
-
-Model mặc định là [YOLOv8n](https://docs.ultralytics.com/models/yolov8/), dùng
-[các class COCO](https://docs.ultralytics.com/datasets/detect/coco/) như
-`person`, `car`, `chair`. COCO không có class bình chữa cháy; muốn nhận diện
-class này cần model đã huấn luyện phù hợp và truyền `model_path:=.../best.pt`.
 
 ## 3. Các bước chạy
 
-### Chuẩn bị mỗi terminal
+**Chuẩn bị mỗi terminal:**
 
 ```bash
 cd ~/workspaces/turtlebot4_ws
@@ -119,151 +63,47 @@ source install/setup.bash
 export ROS_DOMAIN_ID=69
 ```
 
-### Bước 1 — Simulation trong đúng world
-
-Terminal 1:
-
-```bash
-ros2 launch robot_sim sim.launch.py world:=demo_objects enable_camera:=true
-```
-
-### Bước 2 — Nạp map và localization
-
-Terminal 2:
+**Bước 1 — Terminal 1: mở mô phỏng.** World `demo` có vùng trống cho các hành vi.
+Bài này dùng webcam laptop nên có thể tắt camera trên robot.
 
 ```bash
-ros2 launch robot_navigation localization.launch.py \
-  map:=$PWD/src/robot_navigation/maps/my_map.yaml
+ros2 launch robot_sim sim.launch.py world:=demo enable_camera:=false
 ```
 
-Trong RViz dùng **2D Pose Estimate** đặt vị trí và hướng hiện tại của robot. Kiểm tra
-LiDAR `/scan` trùng các tường trên bản đồ.
+**Bước 2 — Terminal 2: mở webcam và node điều khiển.**
+
+```bash
+ros2 launch robot_gesture gesture_control.launch.py \
+  python_executable:=$PWD/.venv-gesture/bin/python \
+  model_path:=$PWD/src/robot_gesture/models/gesture_recognizer.task \
+  control_robot:=true
+```
+
+Đổi `camera_index:=1` nếu cần chọn webcam khác. `control_robot:=false` chỉ
+thử nhận diện; khi đó dòng `controller not connected` là bình thường.
+
+**Bước 3 — Điều khiển bằng tay.** Đưa một tay vào ảnh, giữ cử chỉ chọn khoảng
+0,5 giây, chờ `Selected`, rồi giơ ngón cái để xác nhận.
+
+| Cử chỉ | Hành vi |
+| --- | --- |
+| Vẫy bàn tay xòe qua lại vài nhịp | Chọn xoay trái–phải để chào. |
+| Duỗi ngón trỏ | Chọn tiến–lùi 4 lần. |
+| Duỗi ngón trỏ và ngón giữa thành chữ V | Chọn đi một vòng tròn. |
+| Giơ ngón cái | Xác nhận và thực hiện lựa chọn. |
+| Xòe bàn tay đứng yên | Dừng ngay. |
+| Nắm tay, gập cả ngón cái | Hủy hành vi, trở về chờ. |
+
+Giữ tay với cử chỉ hợp lệ trong ảnh khi robot chạy. Robot tự dừng khi mất tín
+hiệu, thiếu dữ liệu cảm biến hoặc gặp vật cản gần. Không chạy teleop hoặc Nav2
+cùng lúc với điều khiển cử chỉ. Đóng cửa sổ webcam hoặc `Ctrl+C` để kết thúc.
 
 Terminal phụ kiểm tra:
 
 ```bash
-ros2 lifecycle get /amcl
-ros2 lifecycle get /map_server
-ros2 run tf2_ros tf2_echo map base_link
+ros2 topic echo /detected_gesture
+ros2 topic echo /robot_behavior/state
+ros2 topic echo /cmd_vel
 ```
 
-Hai node phải `active` và TF xuất pose.
-
-### Bước 3 — Khảo sát và ghi ít nhất 3 goal
-
-Terminal 3 mở công cụ ghi goal:
-
-```bash
-ros2 run robot_node goal_recorder --ros-args -p use_sim_time:=true \
-  -p output_file:=$PWD/src/robot_navigation/maps/goals.yaml
-```
-
-Trong RViz chọn **Publish Point** và nhấp ít nhất ba vị trí trống thuộc các
-khu vực khác nhau. Tọa độ `(x, y)` được ghi từ `/clicked_point`; yaw mặc định
-là 0 rad. Có thể đổi yaw trước lần nhấp tiếp theo:
-
-```bash
-ros2 param set /goal_recorder clicked_yaw 1.5708
-ros2 topic echo /clicked_point
-```
-
-Hoặc lái robot bằng `ros2 run robot_node teleop_keyboard` **trong giai đoạn
-khảo sát**, dừng ở từng điểm và gọi:
-
-```bash
-ros2 service call /record_current_pose std_srvs/srv/Trigger '{}'
-```
-
-Dịch vụ ghi cả `(x, y, yaw)` hiện tại từ TF `map → base_link`. Chờ TF có dữ
-liệu rồi mới gọi; nếu dịch vụ báo chưa có transform, đợi và gọi lại. Có thể
-quan sát thêm bằng `ros2 topic echo /amcl_pose`.
-
-File ghi nhận có dạng:
-
-```yaml
-frame_id: map
-goals:
-  - {name: Goal 1, x: -1.5, y: 0.0, yaw: 0.0}
-  - {name: Goal 2, x: -1.5, y: 2.5, yaw: 1.5708}
-  - {name: Goal 3, x: 2.5, y: 2.5, yaw: 0.0}
-```
-Sau khi khảo sát, `Ctrl+C` tắt **teleop và goal_recorder**.
-
-### Bước 4 — Khởi động Nav2
-
-Terminal 3:
-
-```bash
-ros2 launch robot_navigation navigation.launch.py
-```
-
-Đợi các node `planner_server`, `controller_server`, `bt_navigator` chuyển
-sang `active`. Giữ simulation, localization và navigation cùng chạy.
-
-### Bước 5 — Nhận diện YOLO từ camera
-
-Terminal 4:
-
-```bash
-ros2 launch robot_perception yolo.launch.py \
-  python_executable:=$PWD/.venv-yolo/bin/python \
-  model_path:=$PWD/src/robot_perception/models/yolov8n.pt
-```
-
-Node subscribe `/camera/image` kiểu `sensor_msgs/msg/Image`, chuyển sang BGR
-bằng `cv_bridge`, chạy YOLO và xuất:
-
-| Topic | Nội dung |
-| --- | --- |
-| `/detections/image` | Ảnh có bounding box, tên class và độ tin cậy. |
-| `/detections/objects` | `std_msgs/msg/String` chứa JSON: timestamp, frame, class, confidence và bbox xyxy theo pixel ảnh gốc. |
-
-Trong RViz bật **YOLO Detections**, hoặc **Add → Image** rồi chọn
-`/detections/image`, QoS **Best Effort / Volatile**. Terminal in class và
-confidence; ảnh không có detection vượt ngưỡng vẫn được xuất.
-Để mở cửa sổ OpenCV, thêm `show_window:=true`; `Ctrl+C` dừng node.
-
-Camera trong workspace dùng `/camera/image`. Nếu dùng topic khác, truyền
-`image_topic:=/oakd/rgb/preview/image_raw`. Cấu hình tốc độ inference, confidence,
-CPU threads và device nằm trong `robot_perception/config/yolo.yaml`.
-
-### Bước 6 — Chạy chương trình tự động qua ba goal
-
-Terminal 5:
-
-```bash
-ros2 launch robot_node waypoints.launch.py \
-  goals_file:=$PWD/src/robot_navigation/maps/goals.yaml
-```
-
-**Từ lúc chạy node này, không bật teleop và không dùng chuột đặt Nav2 Goal.**
-Nếu một goal bị từ chối, thất bại hoặc quá thời gian, chuỗi dừng; `Ctrl+C`
-yêu cầu hủy goal đang chạy và gửi lệnh dừng. Có thể theo dõi trạng thái và
-lưu kết quả:
-
-```bash
-ros2 topic echo /mission/status
-# Hoặc thêm khi launch waypoints:
-# result_file:=$PWD/mission_results.json
-```
-
-Để thử nhanh ba goal mẫu đã có trong package (chỉ phù hợp map demo hiện tại):
-
-```bash
-ros2 launch robot_node waypoints.launch.py
-```
-
-Kết thúc phiên: dừng node mission, node YOLO, Nav2, đóng RViz, rồi tắt
-localization và simulation.
-
-### Khi cần tạo lại map cho world khác
-
-Chạy `robot_mapping mapping.launch.py` cùng teleop trong giai đoạn lập map.
-Khi SLAM vẫn đang chạy, lưu bằng:
-
-```bash
-ros2 launch robot_mapping save_map.launch.py \
-  map_name:=$PWD/src/robot_navigation/maps/my_map
-```
-
-Đợi lưu thành công rồi tắt mapping/teleop, sau đó quay lại bước localization.
+Chi tiết nhận diện và thông số: [robot_gesture/README.md](robot_gesture/README.md).
