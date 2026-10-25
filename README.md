@@ -1,7 +1,6 @@
 # TurtleBot 4 — Điều khiển bằng cử chỉ tay
 
-ROS 2 Humble, Gazebo Fortress, webcam laptop và MediaPipe. Robot nhận cử chỉ
-chọn hành vi, chờ xác nhận rồi thực hiện. Repo có thêm SLAM, Nav2 và YOLO.
+ROS 2 Humble, Gazebo Fortress, webcam laptop và MediaPipe.
 
 ## 1. Các package
 
@@ -9,10 +8,7 @@ chọn hành vi, chờ xác nhận rồi thực hiện. Repo có thêm SLAM, Nav
 | --- | --- |
 | `robot_description` | URDF, mesh chính thức, cảm biến; `robot_state_publisher`. |
 | `robot_sim` | World, spawn robot, bridge ROS–Gazebo; topic `/cmd_vel`, `/odom`, `/scan`, `/camera/image`. |
-| `robot_mapping` | Xây dựng và lưu bản đồ bằng `slam_toolbox`. |
-| `robot_navigation` | Bản đồ trong `maps/`, định vị AMCL và điều hướng Nav2. |
 | `robot_node` | `robot_behavior_node` thực hiện hành vi; thêm teleop, ghi goal và điều hướng qua waypoint. |
-| `robot_perception` | `yolo_detector` nhận diện vật thể từ camera robot. |
 | `robot_gesture` | `gesture_recognition_node` đọc webcam, nhận diện và gửi `/detected_gesture`. |
 
 Luồng điều khiển: **webcam → gesture_recognition_node → /detected_gesture
@@ -31,8 +27,7 @@ sudo apt install git python3-colcon-common-extensions python3-venv python3-pip \
   ros-humble-slam-toolbox ros-humble-navigation2 ros-humble-nav2-bringup
 ```
 
-Clone nhánh `assignment_6` vào `src/` của **workspace mới**. Nếu đã có code,
-bỏ qua bước clone.
+Clone nhánh `assignment_6` vào `src/` của **workspace mới**.
 
 ```bash
 mkdir -p ~/workspaces/turtlebot4_ws
@@ -63,9 +58,7 @@ source install/setup.bash
 export ROS_DOMAIN_ID=69
 ```
 
-**Bước 1 — Terminal 1: mở mô phỏng.** World `arena` có sàn trống 20 × 20 m và
-bốn tường bao, robot xuất hiện ở giữa. Bài này dùng webcam laptop nên có thể
-tắt camera trên robot.
+**Bước 1 — Terminal 1: mở mô phỏng.** Bài này dùng webcam laptop nên tắt camera trên robot.
 
 ```bash
 ros2 launch robot_sim sim.launch.py world:=arena enable_camera:=false
@@ -81,9 +74,9 @@ ros2 launch robot_gesture gesture_control.launch.py \
 ```
 
 Đổi `camera_index:=1` nếu cần chọn webcam khác. `control_robot:=false` chỉ
-thử nhận diện; khi đó dòng `controller not connected` là bình thường.
+thử nhận diện; khi đó sẽ có dòng `controller not connected`.
 
-**Bước 3 — Điều khiển bằng tay.** Đưa một tay vào ảnh, chờ `Selected`, rồi giơ
+**Bước 3 — Điều khiển bằng cử chỉ tay.** Đưa một tay vào ảnh, chờ `Selected`, rồi giơ
 ngón cái để xác nhận. Lựa chọn được lưu, không hết hạn khi đổi tay hoặc chờ
 xác nhận; có thể chọn hành vi khác hoặc nắm tay để hủy.
 
@@ -98,17 +91,6 @@ xác nhận; có thể chọn hành vi khác hoặc nắm tay để hủy.
 
 Giữ tay với cử chỉ hợp lệ trong ảnh khi robot chạy. Robot đang chạy sẽ dừng khi
 mất tín hiệu, thiếu dữ liệu cảm biến hoặc gặp vật cản gần. Dòng `Reason` cho
-biết vì sao chưa chạy; đi tròn cần khoảng trống ít nhất 1,60 m quanh robot với
-cấu hình mặc định. Nếu xác nhận bị chặn, xử lý nguyên nhân, xòe tay rồi xác
+biết vì sao chưa chạy. Nếu xác nhận bị chặn, xử lý nguyên nhân, xòe tay rồi xác
 nhận lại; lựa chọn vẫn được giữ. Không chạy teleop hoặc Nav2
 cùng lúc với điều khiển cử chỉ. Đóng cửa sổ webcam hoặc `Ctrl+C` để kết thúc.
-
-Terminal phụ kiểm tra:
-
-```bash
-ros2 topic echo /detected_gesture
-ros2 topic echo /robot_behavior/state
-ros2 topic echo /cmd_vel
-```
-
-Chi tiết nhận diện và thông số: [robot_gesture/README.md](robot_gesture/README.md).
