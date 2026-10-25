@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!-- Based on turtlebot/turtlebot4_simulator (humble), Apache-2.0.
+     See licenses/NOTICE.depot for pinned upstream sources. -->
+<sdf version="1.6">
+  <world name="depot">
+    <scene>
+      <grid>false</grid>
+    </scene>
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.003</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics" />
+    <plugin filename="ignition-gazebo-user-commands-system" name="ignition::gazebo::systems::UserCommands" />
+    <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster" />
+    <!-- GPU LiDAR and RGB-D rendering for this workspace's TurtleBot4. -->
+    <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="ignition-gazebo-imu-system" name="ignition::gazebo::systems::Imu" />
+    <include>
+      <uri>model://depot</uri>
+    </include>
+    <!-- Fuel's model has a ground-plane collision only. Match its existing
+         obstacle visuals with static mesh collisions; leave upstream files intact. -->
+    <model name="depot_obstacle_collisions">
+      <static>true</static>
+      <link name="obstacles">
+        <collision name="walls">
+          <geometry>
+            <mesh>
+              <uri>model://depot/meshes/Depot.dae</uri>
+              <scale>0.6 0.6 0.6</scale>
+              <submesh><name>WALLS</name><center>false</center></submesh>
+            </mesh>
+          </geometry>
+        </collision>
+        <collision name="pillars">
+          <geometry>
+            <mesh>
+              <uri>model://depot/meshes/Depot.dae</uri>
+              <scale>0.6 0.6 0.6</scale>
+              <submesh><name>PILLERS</name><center>false</center></submesh>
+            </mesh>
+          </geometry>
+        </collision>
+        <collision name="stairs">
+          <geometry>
+            <mesh>
+              <uri>model://depot/meshes/Depot.dae</uri>
+              <scale>0.6 0.6 0.6</scale>
+              <submesh><name>STAIRS</name><center>false</center></submesh>
+            </mesh>
+          </geometry>
+        </collision>
+        <collision name="boxes">
+          <geometry>
+            <mesh>
+              <uri>model://depot/meshes/Depot.dae</uri>
+              <scale>0.6 0.6 0.6</scale>
+              <submesh><name>BOXSET</name><center>false</center></submesh>
+            </mesh>
+          </geometry>
+        </collision>
+        <collision name="crates">
+          <geometry>
+            <mesh>
+              <uri>model://depot/meshes/Crates.dae</uri>
+              <scale>0.6 0.6 0.6</scale>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+  </world>
+</sdf>

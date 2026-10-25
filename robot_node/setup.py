@@ -17,7 +17,7 @@ setup(
     zip_safe=True,
     maintainer='Workspace Maintainer',
     maintainer_email='maintainer@example.com',
-    description='Teleoperation, goal recording and autonomous Nav2 missions for TurtleBot 4.',
+    description='Teleoperation, gesture behaviors, goal recording and Nav2 missions for TurtleBot 4.',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
@@ -25,6 +25,7 @@ setup(
             'teleop_keyboard = robot_node.teleop_keyboard:main',
             'goal_recorder = robot_node.goal_recorder:main',
             'waypoint_navigator = robot_node.waypoint_navigator:main',
+            'robot_behavior_node = robot_node.robot_behavior_node:main',
         ],
     },
 )

@@ -3,6 +3,9 @@
 ROS 2 Humble / Gazebo Fortress. Sử dụng lại map SLAM đã lưu, định vị bằng
 AMCL, tự động đi qua các goal bằng Nav2 và nhận diện vật thể từ camera RGB.
 
+Bài điều khiển bằng cử chỉ tay (webcam + MediaPipe): xem
+[robot_gesture/README.md](robot_gesture/README.md).
+
 ## 1. Cấu trúc chương trình
 
 ```text
@@ -56,6 +59,7 @@ Turtlebot4/                         # Thư mục gốc repo
 | `robot_navigation` | Nạp map đã lưu, chạy AMCL và Nav2 bằng các launch riêng. |
 | `robot_node` | Teleop lúc khảo sát, ghi goal và chạy mission tự động. |
 | `robot_perception` | Nhận ảnh, chuyển đổi bằng cv_bridge, chạy YOLO và xuất ảnh nhận diện. |
+| `robot_gesture` | `gesture_recognition_node` nhận cử chỉ webcam; `robot_behavior_node` trong `robot_node` thực hiện hành vi sau xác nhận. |
 
 ## 2. Clone và cài đặt
 
@@ -76,7 +80,7 @@ Với workspace mới, clone repo vào thư mục `src/` chưa có nội dung:
 ```bash
 mkdir -p ~/workspaces/turtlebot4_ws
 cd ~/workspaces/turtlebot4_ws
-git clone -b assignment_5 --single-branch https://github.com/TNSang25/Turtlebot4.git src
+git clone https://github.com/TNSang25/Turtlebot4.git src
 ```
 
 Nếu workspace đã có các package, bỏ qua bước clone. Sau đó cài YOLO trong

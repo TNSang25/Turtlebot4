@@ -288,5 +288,44 @@
       <static>true</static>
       <pose>4.0 2.5 0 0 0 3.14159</pose>
     </include>
+    <!-- Floor objects from OSRF gazebo_models. Keep the spawn area, doorway
+         at x=1/y=0 and example goal positions clear. All meshes are bundled. -->
+    <include>
+      <uri>model://cafe_table</uri>
+      <name>floor_table_southwest</name>
+      <static>true</static>
+      <pose>-3.8 -3.7 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://cafe_table</uri>
+      <name>floor_table_northeast</name>
+      <static>true</static>
+      <pose>3.8 3.8 0 0 0 0</pose>
+    </include>
+    <!-- The box collision is centred on its model frame: z=half its height. -->
+    <include>
+      <uri>model://cardboard_box</uri>
+      <name>floor_box_west</name>
+      <static>true</static>
+      <pose>-3.8 -0.4 0.15 0 0 0.35</pose>
+    </include>
+    <include>
+      <uri>model://cardboard_box</uri>
+      <name>floor_box_southeast</name>
+      <static>true</static>
+      <pose>3.9 -3.3 0.15 0 0 -0.3</pose>
+    </include>
+    <include>
+      <uri>model://construction_cone</uri>
+      <name>floor_cone_south</name>
+      <static>true</static>
+      <pose>-0.3 -3.8 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://construction_cone</uri>
+      <name>floor_cone_north</name>
+      <static>true</static>
+      <pose>2.4 4.0 0 0 0 0</pose>
+    </include>
   </world>
 </sdf>

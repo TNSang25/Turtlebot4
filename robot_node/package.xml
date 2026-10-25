@@ -2,7 +2,7 @@
 <package format="3">
   <name>robot_node</name>
   <version>0.1.0</version>
-  <description>Teleoperation, goal recording and autonomous Nav2 missions for TurtleBot 4.</description>
+  <description>Teleoperation, gesture behaviors, goal recording and Nav2 missions for TurtleBot 4.</description>
   <maintainer email="maintainer@example.com">Workspace Maintainer</maintainer>
   <license>Apache-2.0</license>
   <buildtool_depend>ament_python</buildtool_depend>

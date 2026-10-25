@@ -1,0 +1,6 @@
+Gesture Recognizer model: Google MediaPipe, float16, version 1.
+Downloaded separately; weights are not part of the source repository.
+URL: https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task
+SHA256: 97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482
+Model/API documentation: https://ai.google.dev/edge/mediapipe/solutions/vision/gesture_recognizer
+The model classifies static gestures; Wave is a local temporal rule over open-palm landmarks.

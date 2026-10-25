@@ -20,7 +20,8 @@ def _launch(context):
         if world.suffix != '.sdf':
             world = world.with_suffix('.sdf')
     if not world.is_file():
-        raise RuntimeError(f'World not found: {world_arg}. Use demo, empty, or an SDF path.')
+        raise RuntimeError(
+            f'World not found: {world_arg}. Use demo, demo_objects, depot, empty, or an SDF path.')
     root = ET.parse(world).getroot()
     if root.find('world') is None:
         raise RuntimeError(f'{world} must contain an SDF <world>.')

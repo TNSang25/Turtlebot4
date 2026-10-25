@@ -1,0 +1,24 @@
+Floor objects in demo_objects.sdf
+================================
+
+Source: https://github.com/osrf/gazebo_models
+Pinned commit: 8163eb4b5e7e21985c6591d1c0bfb56468c0093f
+Model directories: cafe_table, cardboard_box, construction_cone.
+Authors from model.config:
+  cafe_table: Nate Koenig.
+  cardboard_box: Nate Koenig and Cole Biesemeyer.
+  construction_cone: Cole Biesemeyer and Nate Koenig.
+Repository license: Creative Commons Attribution 3.0 Unported.
+See LICENSE.floor_objects for the upstream license notice.
+
+Model files, meshes and textures were downloaded individually from the pinned
+GitHub revision without cloning. Downloads were verified against upstream Git
+blob hashes. The cafe_table and cardboard_box DAE image paths are changed from
+bare filenames to ../materials/textures/<filename> for Fortress resource
+resolution. Geometry, textures and the remaining model files are unchanged.
+
+demo_objects.sdf adds two instances of each model. Each include sets static=true
+and places the model on the floor. Cardboard box centres are at z=0.15 m;
+the table and cone model origins are at floor level (z=0).
+The original room and three person_standing instances are preserved.
+Saved occupancy maps have not been regenerated.

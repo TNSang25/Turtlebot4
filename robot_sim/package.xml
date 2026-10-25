@@ -5,6 +5,8 @@
   <description>Gazebo Fortress worlds, bridges and simulation launch for TurtleBot4.</description>
   <maintainer email="maintainer@example.com">Workspace Maintainer</maintainer>
   <license>Apache-2.0</license>
+  <license>CC-BY-3.0</license>
+  <license>CC-BY-4.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>launch</exec_depend>
