@@ -1,0 +1,19 @@
+speech_recognition_node:
+  ros__parameters:
+    use_sim_time: false
+    device: ""             # default microphone; or index/name from sounddevice
+    sample_rate: 0         # use microphone's native sample rate
+    min_confidence: 0.55
+    max_audio_age: 1.5
+    cpu_threads: 4
+    rms_threshold: 0.008
+    silence_duration: 0.8
+    initial_prompt: "Robot. Khu vực A, B, C, D. Phòng học, hành lang, phòng thí nghiệm."
+voice_navigation_node:
+  ros__parameters:
+    use_sim_time: true
+    goal_clearance: 0.30
+    goal_timeout: 300.0
+    accept_timeout: 10.0
+    cancel_timeout: 5.0
+    tf_max_age: 3.0

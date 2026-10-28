@@ -160,6 +160,16 @@ Visualization Manager:
       Value: false
       Show Names: true
       Marker Scale: 0.3
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Semantic Regions
+      Enabled: true
+      Value: true
+      Topic:
+        Value: /semantic_map/markers
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
   Tools:
     - Class: rviz_default_plugins/MoveCamera
     - Class: rviz_default_plugins/Select

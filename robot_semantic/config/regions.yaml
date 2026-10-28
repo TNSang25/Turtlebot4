@@ -1,0 +1,56 @@
+version: 1
+frame_id: map
+map:
+  width: 198
+  height: 197
+  resolution: 0.05
+  origin:
+  - -4.95
+  - -4.94
+  - 0.0
+  fingerprint: 6536608576a24e8fdb0e86ab4d418dffb5a26c2e01082dae5a932764cb3323a5
+labels_image: ../maps/regions_labels.png
+regions:
+- id: A
+  name: Phòng học
+  aliases:
+  - khu vực a
+  - vùng a
+  - phòng a
+  - phòng học
+  mask_value: 1
+  area_m2: 21.285
+  goal:
+    x: -1.475
+    y: 2.485
+    yaw: 0.0
+- id: B
+  name: Hành lang
+  aliases:
+  - khu vực b
+  - khu vực bê
+  - vùng b
+  - phòng b
+  - hành lang
+  mask_value: 2
+  area_m2: 39.573
+  goal:
+    x: -0.475
+    y: -0.015
+    yaw: 0.0
+- id: C
+  name: Phòng thí nghiệm
+  aliases:
+  - khu vực c
+  - khu vực xê
+  - khu vực cê
+  - vùng c
+  - phòng c
+  - phòng thí nghiệm
+  - phòng lab
+  mask_value: 3
+  area_m2: 29.678
+  goal:
+    x: 2.525
+    y: 2.485
+    yaw: 0.0

@@ -1,0 +1,18 @@
+# Functional names are assigned by the user; they are not inferred room uses.
+# Coordinates in map frame, for robot_navigation/maps/my_map.yaml (world demo).
+regions:
+  - id: A
+    name: Phòng học
+    aliases: [khu vực a, vùng a, phòng a, phòng học]
+    seed: {x: -1.5, y: 2.5}
+    yaw: 0.0
+  - id: B
+    name: Hành lang
+    aliases: [khu vực b, khu vực bê, vùng b, phòng b, hành lang]
+    seed: {x: -0.5, y: 0.0}
+    yaw: 0.0
+  - id: C
+    name: Phòng thí nghiệm
+    aliases: [khu vực c, khu vực xê, khu vực cê, vùng c, phòng c, phòng thí nghiệm, phòng lab]
+    seed: {x: 2.5, y: 2.5}
+    yaw: 0.0

@@ -13,3 +13,5 @@ docs/
 *.task
 *.task.part
 runs/
+faster-whisper-*/
+.whisper-download-*/

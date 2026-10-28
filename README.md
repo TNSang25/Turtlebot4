@@ -1,55 +1,81 @@
-# TurtleBot 4 — Điều khiển bằng cử chỉ tay
+# TurtleBot 4 — Phân vùng bản đồ và điều hướng bằng giọng nói
 
-ROS 2 Humble, Gazebo Fortress, webcam laptop và MediaPipe.
+ROS 2 Humble / Gazebo Fortress. OpenCV phân vùng bản đồ đã lưu; Whisper
+nhận lệnh tiếng Việt offline; Nav2 đưa robot đến khu vực được yêu cầu.
 
 ## 1. Các package
 
 | Package | Chức năng / node chính |
 | --- | --- |
-| `robot_description` | URDF, mesh chính thức, cảm biến; `robot_state_publisher`. |
-| `robot_sim` | World, spawn robot, bridge ROS–Gazebo; topic `/cmd_vel`, `/odom`, `/scan`, `/camera/image`. |
-| `robot_node` | `robot_behavior_node` thực hiện hành vi; thêm teleop, ghi goal và điều hướng qua waypoint. |
-| `robot_gesture` | `gesture_recognition_node` đọc webcam, nhận diện và gửi `/detected_gesture`. |
+| `robot_description` | URDF, mesh và cảm biến TurtleBot 4. |
+| `robot_sim` | Mở Gazebo, spawn robot và bridge `/cmd_vel`, `/odom`, `/scan`, `/clock`. |
+| `robot_mapping` | SLAM Toolbox và lưu bản đồ. |
+| `robot_navigation` | Nạp map, định vị AMCL và chạy Nav2. Bản đồ lưu trong `maps/`. |
+| `robot_semantic` | `segment_map` phân vùng; `semantic_map_node` hiển thị vùng và điểm đích trên RViz. |
+| `robot_voice` | `speech_recognition_node` đọc micro; `voice_navigation_node` phân tích lệnh và gửi action `/navigate_to_pose`. |
+| `robot_node` | Teleop, ghi goal, điều hướng waypoint và điều khiển hành vi cử chỉ. |
+| `robot_gesture` / `robot_perception` | Nhận diện cử chỉ MediaPipe / vật thể YOLO từ các bài trước. |
 
-Luồng điều khiển: **webcam → gesture_recognition_node → /detected_gesture
-→ robot_behavior_node → /cmd_vel → robot trong Gazebo**.
+Luồng chính: **micro → Whisper → `/voice/text` → phân tích vùng → Nav2**.
 
-## 2. Clone và cài đặt
+## 2. Cài đặt
 
-Yêu cầu **Ubuntu 22.04, ROS 2 Humble và Gazebo Fortress** đã cài đặt.
+Yêu cầu Ubuntu 22.04, ROS 2 Humble, Gazebo Fortress và các package trong
+`~/workspaces/turtlebot4_ws/src/`.
 
 ```bash
 sudo apt update
-sudo apt install git python3-colcon-common-extensions python3-venv python3-pip \
-  python3-yaml python3-opencv libportaudio2 \
+sudo apt install python3-colcon-common-extensions python3-venv python3-pip \
+  python3-opencv python3-numpy python3-yaml libportaudio2 \
   ros-humble-ros-gz ros-humble-xacro ros-humble-robot-state-publisher \
-  ros-humble-joint-state-publisher ros-humble-rviz2 ros-humble-cv-bridge \
-  ros-humble-slam-toolbox ros-humble-navigation2 ros-humble-nav2-bringup
-```
+  ros-humble-rviz2 ros-humble-slam-toolbox \
+  ros-humble-navigation2 ros-humble-nav2-bringup
 
-Clone nhánh `assignment_6` vào `src/` của **workspace mới**.
-
-```bash
-mkdir -p ~/workspaces/turtlebot4_ws
 cd ~/workspaces/turtlebot4_ws
-git clone --branch assignment_6 https://github.com/TNSang25/Turtlebot4.git src
-```
-
-Cài MediaPipe trong môi trường riêng, tải model và build:
-
-```bash
-cd ~/workspaces/turtlebot4_ws
-python3 -m venv --system-site-packages .venv-gesture
-.venv-gesture/bin/python -m pip install -r src/robot_gesture/requirements.txt
-python3 src/robot_gesture/scripts/download_model.py
+python3 -m venv --system-site-packages .venv-voice
+.venv-voice/bin/python -m pip install -r src/robot_voice/requirements.txt
+python3 src/robot_voice/scripts/download_model.py
 
 source /opt/ros/humble/setup.bash
 PYTHONNOUSERSITE=1 colcon build --symlink-install
 ```
 
-## 3. Các bước chạy
+Model Whisper small tải khoảng 464 MB, được kiểm tra checksum và chỉ tải
+một lần trước khi build. Khi nhận dạng, âm thanh được xử lý tại máy.
 
-**Chuẩn bị mỗi terminal:**
+## 3. Bản đồ và khu vực
+
+Đã có ba vùng trên `robot_navigation/maps/my_map.yaml`, tương ứng world
+`demo`. Xem ảnh [phân vùng A/B/C](robot_semantic/maps/regions_preview.png).
+
+| ID | Tên / câu lệnh | Điểm đích `(x, y)` trong frame `map` |
+| --- | --- | --- |
+| A | Phòng học / khu vực A | `(-1.475, 2.485)` |
+| B | Hành lang / khu vực B | `(-0.475, -0.015)` |
+| C | Phòng thí nghiệm / khu vực C | `(2.525, 2.485)` |
+
+Tên chức năng do người dùng gán trong `robot_semantic/config/seeds.yaml`.
+Thuật toán threshold theo map YAML, morphology rồi lan truyền nhãn trên ô
+trống theo khoảng cách đường đi; không lan xuyên tường. Điểm đích được kiểm
+tra khoảng trống. Đây là phân vùng chức năng, không tự suy diễn công năng phòng.
+
+Để chỉnh tên, bí danh hoặc điểm hạt giống, sửa `seeds.yaml`, rồi tạo lại:
+
+```bash
+source install/setup.bash
+ros2 run robot_semantic segment_map \
+  --map src/robot_navigation/maps/my_map.yaml \
+  --seeds src/robot_semantic/config/seeds.yaml \
+  --output src/robot_semantic/config/regions.yaml
+```
+
+Với map khác, có thể bỏ `--seeds` và thêm `--count 3` để chọn hạt giống tự
+động. Kiểm tra ảnh kết quả, chỉnh tên/bí danh trong YAML xuất ra và truyền
+`regions_file:=...` khi launch. Map nạp phải khớp bản đã phân vùng.
+
+## 4. Thứ tự chạy
+
+Chuẩn bị **mỗi terminal**:
 
 ```bash
 cd ~/workspaces/turtlebot4_ws
@@ -58,39 +84,63 @@ source install/setup.bash
 export ROS_DOMAIN_ID=69
 ```
 
-**Bước 1 — Terminal 1: mở mô phỏng.** Bài này dùng webcam laptop nên tắt camera trên robot.
+**Terminal 1 — Simulation:** dùng đúng world đã lập bản đồ.
 
 ```bash
-ros2 launch robot_sim sim.launch.py world:=arena enable_camera:=false
+ros2 launch robot_sim sim.launch.py world:=demo enable_camera:=false
 ```
 
-**Bước 2 — Terminal 2: mở webcam và node điều khiển.**
+**Terminal 2 — Localization:**
 
 ```bash
-ros2 launch robot_gesture gesture_control.launch.py \
-  python_executable:=$PWD/.venv-gesture/bin/python \
-  model_path:=$PWD/src/robot_gesture/models/gesture_recognizer.task \
-  control_robot:=true
+ros2 launch robot_navigation localization.launch.py \
+  map:=$PWD/src/robot_navigation/maps/my_map.yaml
 ```
 
-Đổi `camera_index:=1` nếu cần chọn webcam khác. `control_robot:=false` chỉ
-thử nhận diện; khi đó sẽ có dòng `controller not connected`.
+Trong RViz, dùng **2D Pose Estimate** đặt đúng vị trí/hướng robot và kiểm tra
+`/scan` khớp tường. Display **Semantic Regions** sẽ hiện khi chạy terminal 4.
 
-**Bước 3 — Điều khiển bằng cử chỉ tay.** Đưa một tay vào ảnh, chờ `Selected`, rồi giơ
-ngón cái để xác nhận. Lựa chọn được lưu, không hết hạn khi đổi tay hoặc chờ
-xác nhận; có thể chọn hành vi khác hoặc nắm tay để hủy.
+**Terminal 3 — Nav2:**
 
-| Cử chỉ | Hành vi |
-| --- | --- |
-| Vẫy bàn tay xòe qua lại vài nhịp | Chọn xoay trái–phải để chào. |
-| Duỗi ngón trỏ | Chọn tiến–lùi 4 lần. |
-| Duỗi ngón trỏ và ngón giữa thành chữ V | Chọn đi một vòng tròn. |
-| Giơ ngón cái | Xác nhận và thực hiện lựa chọn. |
-| Xòe bàn tay đứng yên | Dừng ngay. |
-| Nắm tay, gập cả ngón cái | Hủy hành vi, trở về chờ. |
+```bash
+ros2 launch robot_navigation navigation.launch.py
+```
 
-Giữ tay với cử chỉ hợp lệ trong ảnh khi robot chạy. Robot đang chạy sẽ dừng khi
-mất tín hiệu, thiếu dữ liệu cảm biến hoặc gặp vật cản gần. Dòng `Reason` cho
-biết vì sao chưa chạy. Nếu xác nhận bị chặn, xử lý nguyên nhân, xòe tay rồi xác
-nhận lại; lựa chọn vẫn được giữ. Không chạy teleop hoặc Nav2
-cùng lúc với điều khiển cử chỉ. Đóng cửa sổ webcam hoặc `Ctrl+C` để kết thúc.
+**Terminal 4 — Phân vùng và nhận lệnh từ micro:**
+
+```bash
+ros2 launch robot_voice voice_navigation.launch.py \
+  python_executable:=$PWD/.venv-voice/bin/python \
+  model_path:=$PWD/src/robot_voice/models/faster-whisper-small
+```
+
+Chờ `Microphone ready` và trạng thái điều hướng `ready`. Nói từng câu, ngừng
+khoảng 0,8 giây và chờ dòng `HEARD`:
+
+- **“Đi đến khu vực A.”**
+- **“Di chuyển từ khu vực A đến khu vực B.”** Nếu chưa ở A, robot đến A trước.
+- **“Đi đến phòng thí nghiệm.”**
+- **“Dừng lại.”** Hủy hành trình đang chạy.
+
+Khu vực không tồn tại sẽ bị từ chối. Khi robot đang chạy, lệnh mới không thay
+thế hành trình; nói dừng trước khi đổi lệnh. Không chạy teleop, controller cử
+chỉ hoặc node waypoint đồng thời. Whisper chạy CPU nên cần chờ nhận dạng xong
+trước câu tiếp theo.
+
+Nếu chọn micro khác, thêm `device:=<index hoặc tên>`. Xem danh sách:
+
+```bash
+.venv-voice/bin/python -m sounddevice
+```
+
+Theo dõi kết quả:
+
+```bash
+ros2 topic echo /voice/text
+ros2 topic echo /voice/navigation_status
+ros2 topic echo /voice/speech_status
+```
+
+Thêm `speech:=false` để chỉ kiểm tra parser/Nav2 bằng topic văn bản; không
+thay thế phần demo micro. `audio_file:=/duong/dan/lenh.wav` dùng để phát lại
+một câu đã thu. Nhãn vùng: `/semantic_map/markers`; ảnh: `/semantic_map/image`.

@@ -1,0 +1,6 @@
+Model: multilingual Whisper small, converted by Systran to CTranslate2.
+Source: https://huggingface.co/Systran/faster-whisper-small
+Upstream: https://github.com/openai/whisper (MIT license)
+Revision: 536b0662742c02347bc0e980a01041f333bce120
+model.bin SHA256: 3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671
+The download script verifies every file. Weights are not committed to Git.
