@@ -1,0 +1,111 @@
+version: 1
+frame_id: map
+map:
+  width: 322
+  height: 243
+  resolution: 0.05
+  origin:
+  - -8.03
+  - -6.05
+  - 0.0
+  fingerprint: 69a4c8cd3d42b6454dab654470aba3f71f59e6a34d18224b0e6f1ca616282633
+labels_image: ../maps/semantic_building_regions_labels.png
+regions:
+- id: A
+  name: Phòng học
+  aliases:
+  - khu vực a
+  - vùng a
+  - phòng a
+  - phòng học
+  - lớp học
+  mask_value: 1
+  area_m2: 31.315
+  goal:
+    x: -4.005
+    y: 3.025
+    yaw: 0.0
+  bounds:
+  - -8.0
+  - 1.5
+  - 0.0
+  - 6.0
+- id: B
+  name: Phòng thí nghiệm
+  aliases:
+  - khu vực b
+  - khu vực bê
+  - vùng b
+  - phòng b
+  - phòng thí nghiệm
+  - phòng lab
+  mask_value: 2
+  area_m2: 30.22
+  goal:
+    x: 3.995
+    y: 3.025
+    yaw: 0.0
+  bounds:
+  - 0.0
+  - 1.5
+  - 8.0
+  - 6.0
+- id: C
+  name: Văn phòng
+  aliases:
+  - khu vực c
+  - khu vực xê
+  - khu vực cê
+  - vùng c
+  - phòng c
+  - văn phòng
+  - phòng làm việc
+  mask_value: 3
+  area_m2: 31.358
+  goal:
+    x: -4.005
+    y: -3.025
+    yaw: 0.0
+  bounds:
+  - -8.0
+  - -6.0
+  - 0.0
+  - -1.5
+- id: D
+  name: Phòng họp
+  aliases:
+  - khu vực d
+  - khu vực dê
+  - vùng d
+  - phòng d
+  - phòng họp
+  mask_value: 4
+  area_m2: 30.765
+  goal:
+    x: 3.995
+    y: -3.025
+    yaw: 0.0
+  bounds:
+  - 0.0
+  - -6.0
+  - 8.0
+  - -1.5
+- id: E
+  name: Hành lang
+  aliases:
+  - khu vực e
+  - khu vực ê
+  - vùng e
+  - hành lang
+  - sảnh
+  mask_value: 5
+  area_m2: 46.473
+  goal:
+    x: -0.005
+    y: -0.025
+    yaw: 0.0
+  bounds:
+  - -8.0
+  - -1.5
+  - 8.0
+  - 1.5

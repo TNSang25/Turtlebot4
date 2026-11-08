@@ -3,6 +3,7 @@ from pathlib import Path
 from types import SimpleNamespace as NS
 
 import pytest
+import yaml
 
 from robot_semantic.maps import RegionSet
 from robot_voice.commands import Command, CommandParser, UnknownRegion, make_route, normalize
@@ -56,3 +57,13 @@ def test_alias_collisions_are_configuration_errors():
     with pytest.raises(ValueError, match='Ambiguous'):
         CommandParser([NS(id='A', name='Phòng 1', aliases=['lab']), NS(id='B', name='Phòng 2', aliases=['LAB'])])
     assert normalize('ĐI ĐẾN Phòng thí nghiệm!') == 'di den phong thi nghiem'
+
+
+def test_building_names_and_source_destination_route():
+    src = Path(__file__).resolve().parents[2]
+    seeds = yaml.safe_load((src/'robot_semantic/config/semantic_building_seeds.yaml').read_text())['regions']
+    parser = CommandParser([NS(**seed) for seed in seeds])
+    for name, identifier in [('phòng học', 'A'), ('phòng thí nghiệm', 'B'),
+                             ('văn phòng', 'C'), ('phòng họp', 'D'), ('hành lang', 'E')]:
+        assert parser.parse(f'Đi đến {name}.').destination == identifier
+    assert make_route(parser.parse('Di chuyển từ phòng học đến phòng họp'), 'E') == ['A', 'D']

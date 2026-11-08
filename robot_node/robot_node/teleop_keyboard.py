@@ -31,9 +31,9 @@ class TeleopKeyboard(Node):
         super().__init__('teleop_keyboard')
         defaults = {
             'output_topic': '/cmd_vel',
-            'linear_speed': 0.20,
-            'angular_speed': 0.80,
-            'max_linear': 0.31,
+            'linear_speed': 0.40,
+            'angular_speed': 1.00,
+            'max_linear': 0.50,
             'max_angular': 1.9,
             'key_timeout': 0.6,
             'publish_rate': 20.0,

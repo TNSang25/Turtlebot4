@@ -2,8 +2,8 @@
 # Based on TurtleBot 4 Humble (Apache-2.0):
 # https://github.com/turtlebot/turtlebot4/blob/humble/turtlebot4_navigation/config/slam.yaml
 # Simulator overrides: ROS clock, absolute scan topic, lidar minimum range,
-# map saver enabled, interactive graph editing disabled, bounded graph growth
-# while stationary and a 1 s occupancy-map publication interval.
+# map saver enabled, interactive graph editing disabled, rotation scans
+# accepted on Humble and a 1 s occupancy-map publication interval.
 slam_toolbox:
   ros__parameters:
 
@@ -32,7 +32,7 @@ slam_toolbox:
     # Round just above the sensor minimum (0.164 m): LaserScan uses float32.
     min_laser_range: 0.165
     max_laser_range: 12.0
-    minimum_time_interval: 0.25 # seconds; limits accepted scans in Humble 2.6.10
+    minimum_time_interval: 0.15 # seconds; also bounds processing while stationary
     transform_timeout: 0.2
     tf_buffer_duration: 30.
     stack_size_to_use: 40000000 # stack for serializing large pose graphs
@@ -41,11 +41,12 @@ slam_toolbox:
     # General Parameters
     use_scan_matching: true
     use_scan_barycenter: true
-    # Do not add duplicate graph nodes indefinitely while stationary.
-    # Humble 2.6.10 also gates scans on translation before checking heading;
-    # pure rotation alone may not add a new graph node (see README).
-    minimum_travel_distance: 0.05
-    minimum_travel_heading: 0.10
+    # Humble 2.6.10 gates scans on base translation before checking heading.
+    # Zero accepts scans during in-place turns, preventing large unobserved yaw
+    # changes at doorways. minimum_time_interval bounds the scan processing rate;
+    # stop mapping after saving rather than leaving a stationary graph growing.
+    minimum_travel_distance: 0.0
+    minimum_travel_heading: 0.08
     scan_buffer_size: 20
     scan_buffer_maximum_scan_distance: 12.0
     link_match_minimum_response_fine: 0.1

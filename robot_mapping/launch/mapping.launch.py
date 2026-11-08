@@ -9,14 +9,22 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
+from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
     share = FindPackageShare('robot_mapping')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    slam_params = RewrittenYaml(
+        source_file=LaunchConfiguration('params_file'),
+        param_rewrites={'do_loop_closing': LaunchConfiguration('loop_closing')},
+        convert_types=True)
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='true'),
         DeclareLaunchArgument('rviz', default_value='true'),
+        DeclareLaunchArgument(
+            'loop_closing', default_value='true', choices=['true', 'false'],
+            description='false avoids false loop matches in the symmetric semantic_building rooms'),
         DeclareLaunchArgument(
             'params_file',
             default_value=PathJoinSubstitution([share, 'config', 'slam.yaml']),
@@ -30,7 +38,7 @@ def generate_launch_description():
             ])),
             launch_arguments={
                 'use_sim_time': use_sim_time,
-                'slam_params_file': LaunchConfiguration('params_file'),
+                'slam_params_file': slam_params,
             }.items()),
         Node(
             package='rviz2', executable='rviz2', name='mapping_rviz',

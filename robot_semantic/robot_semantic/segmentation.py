@@ -45,6 +45,30 @@ def segment(map_image, seeds=None, count=3, clearance=.30, min_area=1.):
             nearest = np.minimum(nearest, np.hypot(xx-col, yy-row)*map_image.geometry.resolution)
     if not isinstance(seeds, list) or not 1 <= len(seeds) <= 26:
         raise ValueError('Provide 1 to 26 seed regions')
+    # Optional room rectangles keep a corridor label out of the rooms. The
+    # unbounded geodesic mode remains available for arbitrary existing maps.
+    bounded = any('bounds' in seed for seed in seeds)
+    allowed = []
+    if bounded:
+        g = map_image.geometry
+        rows, cols = np.indices(free.shape)
+        local_x = (cols+.5)*g.resolution
+        local_y = (g.height-rows-.5)*g.resolution
+        x = g.origin[0]+math.cos(g.origin[2])*local_x-math.sin(g.origin[2])*local_y
+        y = g.origin[1]+math.sin(g.origin[2])*local_x+math.cos(g.origin[2])*local_y
+        covered = np.zeros(free.shape, dtype=bool)
+        for seed in seeds:
+            bounds = seed.get('bounds')
+            if not isinstance(bounds, list) or len(bounds) != 4:
+                raise ValueError('Every bounded region needs bounds: [xmin, ymin, xmax, ymax]')
+            xmin, ymin, xmax, ymax = [finite(v, 'bounds') for v in bounds]
+            if xmin >= xmax or ymin >= ymax:
+                raise ValueError('Region bounds must have positive width and height')
+            mask = (x >= xmin) & (x < xmax) & (y >= ymin) & (y < ymax)
+            if np.any(mask & covered & free):
+                raise ValueError('Region bounds overlap on free cells')
+            allowed.append(mask)
+            covered |= mask
     labels = np.zeros(free.shape, dtype=np.uint8)
     costs = np.full(free.shape, np.inf)
     queue, pixels, ids = [], [], set()
@@ -58,6 +82,8 @@ def segment(map_image, seeds=None, count=3, clearance=.30, min_area=1.):
         col, row = map_image.geometry.world_to_pixel(x, y)
         if not safe[row, col]:
             raise ValueError(f'{identifier}: seed is occupied, unknown, or too near an obstacle')
+        if bounded and not allowed[index-1][row, col]:
+            raise ValueError(f'{identifier}: seed is outside its region bounds')
         if (col, row) in pixels:
             raise ValueError('Seeds must occupy different pixels')
         pixels.append((col, row))
@@ -74,7 +100,8 @@ def segment(map_image, seeds=None, count=3, clearance=.30, min_area=1.):
             continue
         for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
             nr, nc = row+dy, col+dx
-            if 0 <= nr < free.shape[0] and 0 <= nc < free.shape[1] and free[nr, nc] and cost+1 < costs[nr, nc]:
+            if (0 <= nr < free.shape[0] and 0 <= nc < free.shape[1] and free[nr, nc]
+                    and (not bounded or allowed[label-1][nr, nc]) and cost+1 < costs[nr, nc]):
                 costs[nr, nc] = cost+1
                 labels[nr, nc] = label
                 heapq.heappush(queue, (cost+1, label, nr, nc))
@@ -93,6 +120,8 @@ def segment(map_image, seeds=None, count=3, clearance=.30, min_area=1.):
         regions.append(dict(id=str(seed['id']), name=str(seed.get('name', seed['id'])),
                             aliases=aliases, mask_value=index, area_m2=round(area, 3),
                             goal=dict(x=round(x, 6), y=round(y, 6), yaw=finite(seed.get('yaw', 0.), 'yaw'))))
+        if bounded:
+            regions[-1]['bounds'] = list(seed['bounds'])
     return labels, regions
 
 
@@ -132,7 +161,7 @@ def export(map_image, labels, regions, output):
 def main(args=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--map', required=True, help='Saved ROS map YAML')
-    parser.add_argument('--seeds', help='Optional YAML with regions: [{id, name, aliases, seed: {x,y}}]')
+    parser.add_argument('--seeds', help='YAML regions: id, name, aliases, seed: {x,y}, optional bounds: [xmin,ymin,xmax,ymax]')
     parser.add_argument('--count', type=int, default=3, help='Number of automatic functional areas without --seeds')
     parser.add_argument('--clearance', type=float, default=.30)
     parser.add_argument('--min-area', type=float, default=1.)

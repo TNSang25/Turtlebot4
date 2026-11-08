@@ -118,3 +118,41 @@ def test_checked_in_regions_match_saved_demo_map_and_have_safe_goals():
     for r in regions.regions:
         col, row = image.geometry.world_to_pixel(r.x, r.y)
         assert image.free[row, col] and image.clearance[row, col] >= .3
+
+
+def test_bounded_room_labels_do_not_spread_into_the_corridor(tmp_path):
+    image = fixture_map(tmp_path)
+    seeds = [dict(id='A', seed=dict(x=-2.5, y=2.), bounds=[-5., 1., 5., 4.]),
+             dict(id='B', seed=dict(x=-2.5, y=0.), bounds=[-5., -1., 5., 1.]),
+             dict(id='C', seed=dict(x=-2.5, y=-2.), bounds=[-5., -4., 5., -1.])]
+    labels, regions = segment(image, seeds)
+    for row, col in zip(*np.nonzero(labels)):
+        x, y = image.geometry.pixel_to_world(col, row)
+        xmin, ymin, xmax, ymax = seeds[labels[row, col]-1]['bounds']
+        assert xmin <= x < xmax and ymin <= y < ymax
+    assert labels[image.geometry.world_to_pixel(2., 0.)[::-1]] == 2
+    export(image, labels, regions, tmp_path/'config/bounded.yaml')
+    loaded = RegionSet(tmp_path/'config/bounded.yaml')
+    assert loaded.region_at(-2.5, 2.) == 'A'
+    assert loaded.region_at(-2.5, 0.) == 'B'
+    assert loaded.region_at(-2.5, -2.) == 'C'
+
+
+@pytest.mark.parametrize('bounds,match', [
+    ([0., -4., 5., 4.], 'outside'),
+    ([-5., -4., -5., 4.], 'positive'),
+    ([-5., -4., float('nan'), 4.], 'finite'),
+    ([1., 2.], 'bounds'),
+])
+def test_invalid_region_bounds_are_rejected(tmp_path, bounds, match):
+    image = fixture_map(tmp_path)
+    with pytest.raises(ValueError, match=match):
+        segment(image, [dict(id='A', seed=dict(x=-2.5, y=0.), bounds=bounds)])
+
+
+def test_overlapping_region_bounds_are_rejected(tmp_path):
+    image = fixture_map(tmp_path)
+    seeds = [dict(id='A', seed=dict(x=-2.5, y=0.), bounds=[-5., -4., 1., 4.]),
+             dict(id='B', seed=dict(x=2.5, y=0.), bounds=[0., -4., 5., 4.])]
+    with pytest.raises(ValueError, match='overlap'):
+        segment(image, seeds)

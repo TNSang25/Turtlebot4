@@ -113,8 +113,13 @@ def test_navigation_routes_stop_unknown_regions_failures_and_late_acceptance():
 
     def relocate(identifier):
         r = client.regions.by_id[identifier]
+        moved_at = server.get_clock().now().nanoseconds
         server.pose = (r.x, r.y)
-        wait(lambda: client.regions.region_at(*client.current_position()) == identifier)
+        # A TF from an earlier visit can already report this region. Wait for
+        # a newly published transform, not only its old region membership.
+        wait(lambda: rclpy.time.Time.from_msg(client.tf.lookup_transform(
+            'map', 'base_link', rclpy.time.Time()).header.stamp).nanoseconds >= moved_at
+            and client.regions.region_at(*client.current_position()) == identifier)
 
     try:
         wait(lambda: client.state == 'ready', 10.)

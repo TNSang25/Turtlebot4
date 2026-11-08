@@ -154,10 +154,10 @@ class VoiceNavigationNode(Node):
             self.reject(str(error), text)
             return
         if command.kind == 'stop':
-            self.request_cancel('Dừng theo lệnh giọng nói')
+            self.request_cancel('Dừng theo lệnh người dùng')
             return
         if self.busy:
-            self.reject('Robot đang thực hiện lệnh khác. Nói "dừng lại" trước khi đổi hành trình.', text)
+            self.reject('Robot đang thực hiện lệnh khác. Gửi "dừng lại" trước khi đổi hành trình.', text)
             return
         reason = self.not_ready()
         if reason:
@@ -286,7 +286,7 @@ class VoiceNavigationNode(Node):
             reason = self.not_ready()
             state = 'waiting_for_navigation' if reason else 'ready'
             if state != self.state or reason != self.reason:
-                self.emit(state, reason or 'Sẵn sàng nhận lệnh giọng nói')
+                self.emit(state, reason or 'Sẵn sàng nhận lệnh')
         if now-self.last_publish >= 1.:
             self.emit()
 

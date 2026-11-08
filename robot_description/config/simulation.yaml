@@ -2,9 +2,9 @@
 # Wheel geometry must match iRobot's URDF; changing these changes odometry only.
 wheel_radius: 0.03575
 wheel_separation: 0.233
-max_linear_velocity: 0.31
+max_linear_velocity: 0.50
 max_angular_velocity: 1.9
-max_linear_acceleration: 0.5
+max_linear_acceleration: 0.8
 max_angular_acceleration: 2.0
 # Keep upstream scan geometry; use 10 Hz to avoid TF latency with detailed meshes.
 # Upstream Humble simulator uses 62 Hz; this is an interface/performance setting.

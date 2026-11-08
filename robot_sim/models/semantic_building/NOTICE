@@ -1,0 +1,5 @@
+The labelled floor texture is generated locally from
+robot_sim/config/semantic_building.yaml by scripts/generate_semantic_building.py.
+No external model or network download is needed. Apache-2.0, as for robot_sim.
+This asset directory supplies the floor texture; the world geometry is in
+robot_sim/worlds/semantic_building.sdf.

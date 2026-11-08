@@ -22,7 +22,7 @@ def generate_launch_description():
             share, 'models', 'faster-whisper-small'])),
         DeclareLaunchArgument('python_executable', default_value=sys.executable),
         DeclareLaunchArgument('device', default_value=''),
-        DeclareLaunchArgument('speech', default_value='true', description='false: text-topic debugging only'),
+        DeclareLaunchArgument('speech', default_value='true', description='false: use text_command_node or publish /voice/text'),
         DeclareLaunchArgument('audio_file', default_value='', description='Optional mono PCM16 WAV instead of live microphone'),
         DeclareLaunchArgument('use_sim_time', default_value='true'),
         Node(package='robot_semantic', executable='semantic_map_node', output='screen', parameters=[{
@@ -32,6 +32,7 @@ def generate_launch_description():
         Node(package='robot_voice', executable='speech_recognition_node', output='screen',
              prefix=LaunchConfiguration('python_executable'), condition=IfCondition(LaunchConfiguration('speech')),
              parameters=[config, {'model_path': LaunchConfiguration('model_path'),
+                                 'regions_file': regions,
                                  'device': ParameterValue(LaunchConfiguration('device'), value_type=str),
                                  'audio_file': LaunchConfiguration('audio_file')}]),
     ])

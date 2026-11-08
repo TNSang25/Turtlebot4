@@ -27,7 +27,9 @@ def generate_launch_description():
                 'use_sim_time': ParameterValue(
                     LaunchConfiguration('use_sim_time'), value_type=bool),
                 'save_map_timeout': 10.0,
-                'free_thresh_default': 0.25,
+                # Saved trinary maps use gray=205 for unknown. Its occupancy
+                # probability is ~0.196078; keep it above the free threshold.
+                'free_thresh_default': 0.196,
                 'occupied_thresh_default': 0.65,
                 'map_subscribe_transient_local': True,
             }],

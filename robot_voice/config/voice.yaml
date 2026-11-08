@@ -8,7 +8,7 @@ speech_recognition_node:
     cpu_threads: 4
     rms_threshold: 0.008
     silence_duration: 0.8
-    initial_prompt: "Robot. Khu vực A, B, C, D. Phòng học, hành lang, phòng thí nghiệm."
+    initial_prompt: ""     # empty: use IDs and names from the selected regions_file
 voice_navigation_node:
   ros__parameters:
     use_sim_time: true

@@ -17,6 +17,7 @@ from rclpy.signals import SignalHandlerOptions
 from std_msgs.msg import String
 
 from robot_node.runtime import stop_on_signals
+from robot_semantic.maps import RegionSet
 from .audio import UtteranceBuffer
 
 
@@ -24,14 +25,20 @@ class SpeechRecognitionNode(Node):
     def __init__(self):
         super().__init__('speech_recognition_node')
         default = str(Path(get_package_share_directory('robot_voice'))/'models/faster-whisper-small')
+        default_regions = str(Path(get_package_share_directory('robot_semantic'))/'config/regions.yaml')
         for name, value in [('model_path', default), ('device', ''), ('sample_rate', 0),
                             ('min_confidence', .55), ('max_audio_age', 1.5), ('cpu_threads', 4),
                             ('rms_threshold', .008), ('silence_duration', .8), ('audio_file', ''),
-                            ('initial_prompt', 'Robot. Khu vực A, B, C, D. Phòng học, hành lang, phòng thí nghiệm.')]:
+                            ('initial_prompt', ''), ('regions_file', default_regions)]:
             self.declare_parameter(name, value)
         self.options = {name: self.get_parameter(name).value for name in (
             'model_path', 'device', 'sample_rate', 'min_confidence', 'max_audio_age', 'audio_file',
             'cpu_threads', 'rms_threshold', 'silence_duration', 'initial_prompt')}
+        if not self.options['initial_prompt']:
+            regions = RegionSet(self.get_parameter('regions_file').value).regions
+            identifiers = ', '.join(r.id for r in regions)
+            names = ', '.join(r.name for r in regions)
+            self.options['initial_prompt'] = f'Robot. Khu vực {identifiers}. {names}.'
         if (not math.isfinite(self.options['min_confidence']) or not 0 <= self.options['min_confidence'] <= 1
                 or any(not math.isfinite(self.options[k]) or self.options[k] <= 0
                        for k in ('max_audio_age', 'rms_threshold', 'silence_duration'))
@@ -64,7 +71,7 @@ class SpeechRecognitionNode(Node):
             if not text:
                 return
             if (not math.isfinite(confidence) or confidence < self.options['min_confidence']
-                    or any(s.avg_logprob < -1. for s in segments)):
+                    or any(s.avg_logprob < -1. or s.compression_ratio > 2.4 for s in segments)):
                 self.status('uncertain', text=text, confidence=confidence)
                 self.get_logger().warning(f'Chưa đủ tin cậy ({confidence:.2f}), hãy nói lại: {text}')
                 return

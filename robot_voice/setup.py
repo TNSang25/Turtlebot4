@@ -17,5 +17,9 @@ setup(
     install_requires=['setuptools'], zip_safe=True,
     maintainer='Workspace Maintainer', maintainer_email='maintainer@example.com',
     description='Offline Vietnamese speech recognition and semantic Nav2 navigation.', license='Apache-2.0',
-    entry_points={'console_scripts': ['speech_recognition_node = robot_voice.speech_recognition_node:main', 'voice_navigation_node = robot_voice.voice_navigation_node:main']},
+    entry_points={'console_scripts': [
+        'speech_recognition_node = robot_voice.speech_recognition_node:main',
+        'voice_navigation_node = robot_voice.voice_navigation_node:main',
+        'text_command_node = robot_voice.text_command_node:main',
+    ]},
 )

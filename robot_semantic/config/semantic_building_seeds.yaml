@@ -1,0 +1,92 @@
+# Template for a NEW SLAM map of world semantic_building.
+# Start robot/SLAM at (0,0,0); check coordinates against the saved map.
+# bounds: [xmin, ymin, xmax, ymax] in map frame; edit if SLAM frame differs.
+regions:
+- id: A
+  name: Phòng học
+  aliases:
+  - khu vực a
+  - vùng a
+  - phòng a
+  - phòng học
+  - lớp học
+  bounds:
+  - -8.0
+  - 1.5
+  - 0.0
+  - 6.0
+  seed:
+    x: -4.0
+    y: 3.0
+  yaw: 0.0
+- id: B
+  name: Phòng thí nghiệm
+  aliases:
+  - khu vực b
+  - khu vực bê
+  - vùng b
+  - phòng b
+  - phòng thí nghiệm
+  - phòng lab
+  bounds:
+  - 0.0
+  - 1.5
+  - 8.0
+  - 6.0
+  seed:
+    x: 4.0
+    y: 3.0
+  yaw: 0.0
+- id: C
+  name: Văn phòng
+  aliases:
+  - khu vực c
+  - khu vực xê
+  - khu vực cê
+  - vùng c
+  - phòng c
+  - văn phòng
+  - phòng làm việc
+  bounds:
+  - -8.0
+  - -6.0
+  - 0.0
+  - -1.5
+  seed:
+    x: -4.0
+    y: -3.0
+  yaw: 0.0
+- id: D
+  name: Phòng họp
+  aliases:
+  - khu vực d
+  - khu vực dê
+  - vùng d
+  - phòng d
+  - phòng họp
+  bounds:
+  - 0.0
+  - -6.0
+  - 8.0
+  - -1.5
+  seed:
+    x: 4.0
+    y: -3.0
+  yaw: 0.0
+- id: E
+  name: Hành lang
+  aliases:
+  - khu vực e
+  - khu vực ê
+  - vùng e
+  - hành lang
+  - sảnh
+  bounds:
+  - -8.0
+  - -1.5
+  - 8.0
+  - 1.5
+  seed:
+    x: 0.0
+    y: 0.0
+  yaw: 0.0
