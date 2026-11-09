@@ -1,8 +1,5 @@
 # TurtleBot 4 — Phân vùng bản đồ và điều hướng bằng giọng nói
 
-ROS 2 Humble / Gazebo Fortress. OpenCV phân vùng bản đồ đã lưu; Whisper
-nhận lệnh tiếng Việt offline; Nav2 đưa robot đến khu vực được yêu cầu.
-
 ## 1. Các package
 
 | Package | Chức năng / node chính |
@@ -13,14 +10,8 @@ nhận lệnh tiếng Việt offline; Nav2 đưa robot đến khu vực được
 | `robot_navigation` | Nạp map, định vị AMCL và chạy Nav2. Bản đồ lưu trong `maps/`. |
 | `robot_semantic` | `segment_map` phân vùng; `semantic_map_node` hiển thị vùng và điểm đích trên RViz. |
 | `robot_voice` | `speech_recognition_node` đọc micro; `text_command_node` nhập câu lệnh trong terminal; `voice_navigation_node` phân tích lệnh và gửi action `/navigate_to_pose`. |
-| `robot_node` | Teleop, ghi goal, điều hướng waypoint và điều khiển hành vi cử chỉ. |
-| `robot_gesture` / `robot_perception` | Nhận diện cử chỉ MediaPipe / vật thể YOLO từ các bài trước. |
 
 Luồng chính: **micro → Whisper → `/voice/text` → phân tích vùng → Nav2**.
-
-Vận tốc mô phỏng: Nav2 tối đa **0,50 m/s**, teleop mặc định **0,40 m/s**;
-gia tốc/giảm tốc dọc tối đa **0,80 m/s²**. Khởi động lại simulation và Nav2
-sau khi thay cấu hình vận tốc.
 
 ## 2. Cài đặt
 
@@ -52,10 +43,7 @@ source /opt/ros/humble/setup.bash
 PYTHONNOUSERSITE=1 colcon build --symlink-install
 ```
 
-Model Whisper small tải khoảng 464 MB, được kiểm tra checksum và chỉ tải
-một lần trước khi build. Khi nhận dạng, âm thanh được xử lý tại máy.
-
-## 3. World có phòng và hành lang
+## 3. World
 
 Chạy `world:=semantic_building`. World tự xây dựng, chạy offline, gồm bốn
 phòng có cửa nối với hành lang; có bàn/tủ, màu sàn và nhãn tên trong Gazebo.
@@ -71,15 +59,11 @@ World: `robot_sim/worlds/semantic_building.sdf`;
 | Bản đồ phân vùng | `robot_semantic/maps/semantic_building_regions_labels.png` và `semantic_building_regions_preview.png` | `labels.png` lưu ID vùng theo từng pixel; `preview.png` tô màu và đánh dấu A–E để kiểm tra. Ảnh màu không thay thế map gốc. |
 | Thông tin khu vực | `robot_semantic/config/semantic_building_regions.yaml` | Chứa ID, tên, bí danh, `goal: {x, y, yaw}`, đường dẫn ảnh nhãn và fingerprint map. Bộ nhận lệnh tra file này để gửi đích cho Nav2. |
 
-**Chỗ chèn ảnh:** thay hai đường dẫn dưới bằng ảnh của bạn nếu cần.
-
 <!-- Có thể dùng ảnh chụp RViz thay cho các ảnh preview có sẵn. -->
 | Bản đồ gốc | Bản đồ phân vùng A–E |
 | --- | --- |
 | ![Bản đồ gốc](robot_navigation/maps/semantic_building_preview.png) | ![Bản đồ phân vùng](robot_semantic/maps/semantic_building_regions_preview.png) |
 
-Map đã quét bổ sung các góc phòng và sàn phía sau bàn/tủ. Vùng xám bên trong
-vật cản là phần LiDAR không quan sát được.
 
 **Điểm đích đang lưu trong file khu vực** (frame `map`, mét/radian):
 
@@ -138,9 +122,6 @@ ros2 run robot_node teleop_keyboard --ros-args \
   -p linear_speed:=0.25 -p angular_speed:=0.45
 ```
 
-Đi chậm dọc hành lang, vào đủ bốn phòng, quan sát map khép kín rồi dừng robot.
-World này có các phòng đối xứng nên lượt quét dùng `loop_closing:=false` để
-tránh ghép nhầm phòng. Với world khác có thể dùng giá trị mặc định `true`.
 **Terminal 4 — Lưu riêng map mới:**
 
 ```bash
@@ -156,15 +137,6 @@ ros2 run robot_semantic segment_map \
   --seeds src/robot_semantic/config/semantic_building_seeds.yaml \
   --output src/robot_semantic/config/semantic_building_regions.yaml
 ```
-
-Kiểm tra `robot_semantic/maps/semantic_building_regions_preview.png`. Chương
-trình chỉ gán nhãn ô trống trong giới hạn từng phòng/hành lang, giữ tường và
-vùng chưa quét; điểm đích phải đủ khoảng trống. Lỗi seed nằm ngoài map, gần
-vật cản hoặc vùng chưa nối nhau: quét bổ sung hoặc sửa seed theo tọa độ RViz
-(**Publish Point** → `ros2 topic echo /clicked_point`) rồi chạy lại lệnh.
-
-Dừng SLAM và teleop trước bước định vị. Có thể đóng simulation và mở lại
-để robot trở về vị trí xuất phát.
 
 ## 5. Chạy điều hướng bằng micro
 
@@ -227,15 +199,6 @@ Giữ cả bốn terminal chạy. Chờ `Microphone ready` và trạng thái đi
 - **“Di chuyển từ phòng học đến phòng họp.”** → qua A rồi D nếu chưa ở A.
 - **“Dừng lại.”** → hủy hành trình sau khi câu nói được nhận dạng.
 
-Điểm đích được đọc từ file vùng rồi gửi `NavigateToPose` trong frame `map`;
-Nav2 lập đường đi và điều khiển qua `/cmd_vel`. Display **Semantic Regions**
-trong RViz hiện các nhãn/đích trên `/semantic_map/markers`.
-Terminal 4 hiện `sending_goal` → `navigating` → `completed` khi đến đích.
-Nếu chưa `ready`, xem `reason` để biết đang chờ map, TF/Initial Pose hay Nav2.
-
-Tên không tồn tại bị từ chối. Đang chạy thì nói dừng trước khi đổi hành trình.
-Không chạy teleop/controller cử chỉ/waypoint đồng thời. Nhận dạng chạy CPU nên
-có độ trễ; lệnh dừng bằng giọng nói cũng cần chờ nhận dạng xong.
 
 Chọn micro khác bằng `device:=<index hoặc tên>`. Liệt kê thiết bị:
 
@@ -250,9 +213,6 @@ ros2 topic echo /voice/text
 ros2 topic echo /voice/navigation_status
 ros2 topic echo /voice/speech_status
 ```
-
-Map và file vùng phải khớp; hệ thống sẽ từ chối nếu nạp nhầm map. Sau khi lưu
-lại map, chạy lại `segment_map`.
 
 ## 6. Thử nhận lệnh và Nav2 bằng cách nhập chữ
 
