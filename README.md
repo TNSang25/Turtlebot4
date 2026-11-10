@@ -15,10 +15,7 @@ Luồng chính: **micro → Whisper → `/voice/text` → phân tích vùng → 
 
 ## 2. Cài đặt
 
-Yêu cầu Ubuntu 22.04, ROS 2 Humble, Gazebo Fortress và các package trong
-`~/workspaces/turtlebot4_ws/src/`.
-
-Máy mới, lấy code (các package nằm trực tiếp trong repo):
+Yêu cầu Ubuntu 22.04, ROS 2 Humble, Gazebo Fortress
 
 ```bash
 mkdir -p ~/workspaces/turtlebot4_ws
