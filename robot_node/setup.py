@@ -26,6 +26,7 @@ setup(
             'goal_recorder = robot_node.goal_recorder:main',
             'waypoint_navigator = robot_node.waypoint_navigator:main',
             'robot_behavior_node = robot_node.robot_behavior_node:main',
+            'emotion_behavior_node = robot_node.emotion_behavior_node:main',
         ],
     },
 )

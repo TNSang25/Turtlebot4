@@ -1,0 +1,8 @@
+# Runtime for FER's OpenCV Haar + bundled TensorFlow Lite model (Python 3.10).
+# FER itself is installed separately with --no-deps; MTCNN/video extras are unused.
+numpy==1.26.4
+scipy==1.11.4
+opencv-python==4.10.0.84
+tensorflow-cpu==2.15.1
+requests>=2.31,<3
+setuptools>=65,<81

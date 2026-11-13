@@ -1,0 +1,33 @@
+emotion_recognition_node:
+  ros__parameters:
+    use_sim_time: false
+    camera_index: 0
+    width: 640
+    height: 480
+    frame_rate: 12.0
+    confidence: 0.50
+    score_margin: 0.08
+    smoothing: 0.5
+    stable_frames: 3
+    max_frame_age: 0.50
+    mirror: true
+    show_window: true
+
+emotion_behavior_node:
+  ros__parameters:
+    use_sim_time: true
+    stable_frames: 2
+    signal_timeout: 0.80
+    uncertain_timeout: 0.50
+    linear_speed: 0.15
+    reverse_speed: 0.10
+    angular_speed: 0.60
+    arc_radius: 0.60
+    arc_angle: 1.5707963267948966
+    step_distance: 0.25
+    stop_distance: 0.40
+    rotation_clearance: 0.30
+    progress_timeout: 5.0
+    max_duration: 45.0
+    sensor_timeout: 0.80
+    publish_rate: 20.0
