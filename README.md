@@ -1,6 +1,6 @@
 # TurtleBot 4 — Điều khiển bằng biểu cảm khuôn mặt
 
-Ubuntu 22.04, ROS 2 Humble và Gazebo Fortress. FER nhận diện biểu cảm từ
+FER nhận diện biểu cảm từ
 webcam laptop; robot thực hiện quỹ đạo tương ứng trong world `arena`.
 
 **Pipeline:** webcam → `emotion_recognition_node` → `/detected_emotion`
@@ -14,11 +14,6 @@ webcam laptop; robot thực hiện quỹ đạo tương ứng trong world `arena
 | `robot_node` | `emotion_behavior_node`: nhận biểu cảm, kiểm tra LiDAR/odometry và gửi vận tốc ở 20 Hz. |
 | `robot_sim` | Mở world, spawn robot và chạy `simulation_bridge` từ `ros_gz_bridge`. |
 | `robot_description` | URDF, mesh và cảm biến TurtleBot 4. |
-
-Các package `robot_mapping`, `robot_navigation`, `robot_semantic`,
-`robot_voice`, `robot_gesture`, `robot_perception` cung cấp SLAM, Nav2, phân
-vùng bản đồ, giọng nói, cử chỉ tay và YOLO. Hướng dẫn bài giọng nói nằm ở
-[nhánh assignment_7](https://github.com/TNSang25/Turtlebot4/tree/assignment_7).
 
 ## 2. Topic chính
 
@@ -34,7 +29,7 @@ vùng bản đồ, giọng nói, cử chỉ tay và YOLO. Hướng dẫn bài gi
 
 ## 3. Clone và cài đặt
 
-Máy đã cài ROS 2 Humble. Clone các package trực tiếp vào `src/`:
+Clone các package trực tiếp vào `src/`:
 
 ```bash
 mkdir -p ~/workspaces/turtlebot4_ws
